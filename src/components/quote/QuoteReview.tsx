@@ -11,7 +11,7 @@ import { CustomerFormValues } from "./CustomerForm";
 import { Check, FileText, Loader2 } from "lucide-react";
 
 interface QuoteReviewProps {
-  customerId: string;
+  customerId?: string; // Made optional with ?
   customerData?: CustomerFormValues;
   serviceId?: string;
   serviceName?: string;
