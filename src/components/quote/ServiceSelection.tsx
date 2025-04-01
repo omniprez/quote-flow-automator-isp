@@ -93,64 +93,54 @@ export function ServiceSelection({
 
   const watchServiceId = form.watch("serviceId");
 
-  // Fetch services
+  // Fetch services and bandwidth options
   useEffect(() => {
-    const fetchServices = async () => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
+      
       try {
-        console.log("Fetching services...");
-        setError(null);
-        const { data, error } = await supabase
+        // Fetch services
+        const { data: servicesData, error: servicesError } = await supabase
           .from("services")
           .select("*")
           .order("name");
 
-        if (error) {
-          throw error;
-        }
+        if (servicesError) throw servicesError;
         
-        console.log("Services data:", data);
-        if (data && data.length > 0) {
-          setServices(data);
+        if (servicesData && servicesData.length > 0) {
+          console.log("Services data:", servicesData);
+          setServices(servicesData);
         } else {
           setError("No services found. Please contact your administrator.");
           toast.error("No services found");
         }
-      } catch (error) {
-        console.error("Error fetching services:", error);
-        setError("Failed to load services. Please try again later.");
-        toast.error("Failed to load services");
-      }
-    };
 
-    const fetchBandwidthOptions = async () => {
-      try {
-        console.log("Fetching bandwidth options...");
-        const { data, error } = await supabase
+        // Fetch bandwidth options
+        const { data: bandwidthData, error: bandwidthError } = await supabase
           .from("bandwidth_options")
           .select("*")
           .eq("is_available", true)
           .order("bandwidth");
 
-        if (error) {
-          throw error;
-        }
+        if (bandwidthError) throw bandwidthError;
         
-        console.log("Bandwidth options data:", data);
-        if (data && data.length > 0) {
-          setBandwidthOptions(data);
+        if (bandwidthData && bandwidthData.length > 0) {
+          console.log("Bandwidth options data:", bandwidthData);
+          setBandwidthOptions(bandwidthData);
         } else {
           console.log("No bandwidth options found.");
         }
-      } catch (error) {
-        console.error("Error fetching bandwidth options:", error);
-        toast.error("Failed to load bandwidth options");
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError("Failed to load data. Please try again later.");
+        toast.error("Failed to load data");
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchServices();
-    fetchBandwidthOptions();
+    fetchData();
   }, []);
 
   // Filter bandwidth options based on selected service
@@ -183,7 +173,7 @@ export function ServiceSelection({
     } else {
       setSelectedBandwidth(null);
     }
-  }, [form.getValues().bandwidthId, bandwidthOptions]);
+  }, [form, bandwidthOptions]);
 
   const onSubmit = (data: ServiceFormValues) => {
     if (!selectedService || !selectedBandwidth) {
