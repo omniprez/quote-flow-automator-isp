@@ -109,48 +109,11 @@ export function ServiceSelection({
         }
         
         console.log("Services data:", data);
-        if (!data || data.length === 0) {
-          // Insert predefined services if none exist
-          const predefinedServices = [
-            {
-              name: "Dedicated Internet Access",
-              type: "DIA",
-              description: "Premium dedicated internet connection with guaranteed bandwidth",
-              setup_fee: 5000,
-              min_contract_months: 12
-            },
-            {
-              name: "Enterprise Business Internet",
-              type: "EBI",
-              description: "Business-grade internet solution with shared bandwidth",
-              setup_fee: 3000,
-              min_contract_months: 12
-            },
-            {
-              name: "Private WAN",
-              type: "Private WAN",
-              description: "Secure private network connecting multiple business locations",
-              setup_fee: 7500,
-              min_contract_months: 12
-            }
-          ];
-          
-          toast.info("Adding predefined services to the database");
-          
-          // Insert the predefined services
-          for (const service of predefinedServices) {
-            await supabase.from("services").insert(service);
-          }
-          
-          // Fetch again to get the newly inserted services with their IDs
-          const { data: refreshedData } = await supabase
-            .from("services")
-            .select("*")
-            .order("name");
-            
-          setServices(refreshedData || []);
-        } else {
+        if (data && data.length > 0) {
           setServices(data);
+        } else {
+          setError("No services found. Please contact your administrator.");
+          toast.error("No services found");
         }
       } catch (error) {
         console.error("Error fetching services:", error);
@@ -173,11 +136,10 @@ export function ServiceSelection({
         }
         
         console.log("Bandwidth options data:", data);
-        if (!data || data.length === 0) {
-          // If no bandwidth options exist, we'll need to create some after we have services
-          toast.info("No bandwidth options found. You may need to add some in the admin panel.");
-        } else {
+        if (data && data.length > 0) {
           setBandwidthOptions(data);
+        } else {
+          console.log("No bandwidth options found.");
         }
       } catch (error) {
         console.error("Error fetching bandwidth options:", error);
@@ -205,62 +167,6 @@ export function ServiceSelection({
       // Reset bandwidth selection when service changes
       if (!filtered.find(b => b.id === form.getValues().bandwidthId)) {
         form.setValue("bandwidthId", "");
-      }
-      
-      // If no bandwidth options exist for this service, we can create some placeholders
-      if (filtered.length === 0 && service) {
-        const createBandwidthOptions = async () => {
-          toast.info(`Creating bandwidth options for ${service.name}`);
-          
-          // Define different options based on service type
-          let options = [];
-          
-          if (service.type === "DIA") {
-            options = [
-              { bandwidth: 10, unit: "Mbps", monthly_price: 2000 },
-              { bandwidth: 20, unit: "Mbps", monthly_price: 3000 },
-              { bandwidth: 50, unit: "Mbps", monthly_price: 5000 },
-              { bandwidth: 100, unit: "Mbps", monthly_price: 8000 },
-            ];
-          } else if (service.type === "EBI") {
-            options = [
-              { bandwidth: 10, unit: "Mbps", monthly_price: 1500 },
-              { bandwidth: 25, unit: "Mbps", monthly_price: 2500 },
-              { bandwidth: 50, unit: "Mbps", monthly_price: 4000 },
-            ];
-          } else if (service.type === "Private WAN") {
-            options = [
-              { bandwidth: 5, unit: "Mbps", monthly_price: 3000 },
-              { bandwidth: 10, unit: "Mbps", monthly_price: 4500 },
-              { bandwidth: 20, unit: "Mbps", monthly_price: 7000 },
-            ];
-          }
-          
-          // Insert the options
-          for (const option of options) {
-            await supabase.from("bandwidth_options").insert({
-              service_id: service.id,
-              ...option,
-              is_available: true
-            });
-          }
-          
-          // Fetch the newly created options
-          const { data } = await supabase
-            .from("bandwidth_options")
-            .select("*")
-            .eq("service_id", service.id)
-            .eq("is_available", true)
-            .order("bandwidth");
-            
-          if (data) {
-            const allOptions = [...bandwidthOptions, ...data];
-            setBandwidthOptions(allOptions);
-            setFilteredBandwidth(data);
-          }
-        };
-        
-        createBandwidthOptions();
       }
     } else {
       setFilteredBandwidth([]);
@@ -372,7 +278,7 @@ export function ServiceSelection({
                       <SelectContent>
                         {filteredBandwidth.length === 0 ? (
                           <div className="px-2 py-4 text-center text-muted-foreground">
-                            {watchServiceId ? "No bandwidth options available" : "Select a service first"}
+                            {watchServiceId ? "No bandwidth options available for this service" : "Select a service first"}
                           </div>
                         ) : (
                           filteredBandwidth.map((option) => (
