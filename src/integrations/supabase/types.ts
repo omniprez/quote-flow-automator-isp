@@ -9,7 +9,277 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      additional_features: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          monthly_price: number
+          name: string
+          one_time_fee: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          monthly_price: number
+          name: string
+          one_time_fee?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          monthly_price?: number
+          name?: string
+          one_time_fee?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      bandwidth_options: {
+        Row: {
+          bandwidth: number
+          created_at: string
+          id: string
+          is_available: boolean
+          monthly_price: number
+          service_id: string
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          bandwidth: number
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          monthly_price: number
+          service_id: string
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          bandwidth?: number
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          monthly_price?: number
+          service_id?: string
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bandwidth_options_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          address: string | null
+          city: string | null
+          company_name: string
+          contact_name: string
+          country: string
+          created_at: string
+          email: string
+          id: string
+          industry: string | null
+          phone: string | null
+          state: string | null
+          updated_at: string
+          zip: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          company_name: string
+          contact_name: string
+          country?: string
+          created_at?: string
+          email: string
+          id?: string
+          industry?: string | null
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          zip?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          company_name?: string
+          contact_name?: string
+          country?: string
+          created_at?: string
+          email?: string
+          id?: string
+          industry?: string | null
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          zip?: string | null
+        }
+        Relationships: []
+      }
+      quotes: {
+        Row: {
+          contract_term_months: number
+          created_at: string
+          customer_id: string
+          expiration_date: string | null
+          id: string
+          notes: string | null
+          quote_date: string
+          quote_number: string
+          sales_rep_id: string
+          status: string
+          total_monthly_cost: number
+          total_one_time_cost: number
+          updated_at: string
+        }
+        Insert: {
+          contract_term_months?: number
+          created_at?: string
+          customer_id: string
+          expiration_date?: string | null
+          id?: string
+          notes?: string | null
+          quote_date?: string
+          quote_number: string
+          sales_rep_id: string
+          status?: string
+          total_monthly_cost?: number
+          total_one_time_cost?: number
+          updated_at?: string
+        }
+        Update: {
+          contract_term_months?: number
+          created_at?: string
+          customer_id?: string
+          expiration_date?: string | null
+          id?: string
+          notes?: string | null
+          quote_date?: string
+          quote_number?: string
+          sales_rep_id?: string
+          status?: string
+          total_monthly_cost?: number
+          total_one_time_cost?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_features: {
+        Row: {
+          feature_id: string
+          service_id: string
+        }
+        Insert: {
+          feature_id: string
+          service_id: string
+        }
+        Update: {
+          feature_id?: string
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_features_feature_id_fkey"
+            columns: ["feature_id"]
+            isOneToOne: false
+            referencedRelation: "additional_features"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_features_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          min_contract_months: number
+          name: string
+          setup_fee: number
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          min_contract_months?: number
+          name: string
+          setup_fee?: number
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          min_contract_months?: number
+          name?: string
+          setup_fee?: number
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      templates: {
+        Row: {
+          content: Json
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

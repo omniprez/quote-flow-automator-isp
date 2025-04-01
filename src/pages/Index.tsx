@@ -20,8 +20,8 @@ const Index = () => {
               Manage Services & Pricing
             </Link>
           </Button>
-          <Button asChild size="lg" variant="outline" className="w-full">
-            <Link to="/" className="opacity-50 cursor-not-allowed">
+          <Button asChild size="lg" className="w-full">
+            <Link to="/quotes/create">
               <FileText className="mr-2 h-5 w-5" />
               Create New Quote
             </Link>
