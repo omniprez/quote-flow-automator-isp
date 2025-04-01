@@ -109,29 +109,48 @@ export function ServiceSelection({
         }
         
         console.log("Services data:", data);
-        if (data && data.length === 0) {
-          // If no services are found, add a placeholder for testing
-          setServices([
+        if (!data || data.length === 0) {
+          // Insert predefined services if none exist
+          const predefinedServices = [
             {
-              id: "placeholder-1",
-              name: "Fiber Internet",
-              type: "Internet",
-              description: "High-speed fiber internet connection",
+              name: "Dedicated Internet Access",
+              type: "DIA",
+              description: "Premium dedicated internet connection with guaranteed bandwidth",
               setup_fee: 5000,
               min_contract_months: 12
             },
             {
-              id: "placeholder-2",
-              name: "Business VoIP",
-              type: "Voice",
-              description: "Voice over IP telephony service",
+              name: "Enterprise Business Internet",
+              type: "EBI",
+              description: "Business-grade internet solution with shared bandwidth",
               setup_fee: 3000,
               min_contract_months: 12
+            },
+            {
+              name: "Private WAN",
+              type: "Private WAN",
+              description: "Secure private network connecting multiple business locations",
+              setup_fee: 7500,
+              min_contract_months: 12
             }
-          ]);
-          setError("Using placeholder services as no services were found in the database");
+          ];
+          
+          toast.info("Adding predefined services to the database");
+          
+          // Insert the predefined services
+          for (const service of predefinedServices) {
+            await supabase.from("services").insert(service);
+          }
+          
+          // Fetch again to get the newly inserted services with their IDs
+          const { data: refreshedData } = await supabase
+            .from("services")
+            .select("*")
+            .order("name");
+            
+          setServices(refreshedData || []);
         } else {
-          setServices(data || []);
+          setServices(data);
         }
       } catch (error) {
         console.error("Error fetching services:", error);
@@ -154,36 +173,11 @@ export function ServiceSelection({
         }
         
         console.log("Bandwidth options data:", data);
-        if (data && data.length === 0) {
-          // If no bandwidth options are found, add placeholders for testing
-          setBandwidthOptions([
-            {
-              id: "bw-placeholder-1",
-              service_id: "placeholder-1",
-              bandwidth: 100,
-              unit: "Mbps",
-              monthly_price: 3500,
-              is_available: true
-            },
-            {
-              id: "bw-placeholder-2",
-              service_id: "placeholder-1",
-              bandwidth: 200,
-              unit: "Mbps",
-              monthly_price: 5000,
-              is_available: true
-            },
-            {
-              id: "bw-placeholder-3",
-              service_id: "placeholder-2",
-              bandwidth: 10,
-              unit: "Lines",
-              monthly_price: 2000,
-              is_available: true
-            }
-          ]);
+        if (!data || data.length === 0) {
+          // If no bandwidth options exist, we'll need to create some after we have services
+          toast.info("No bandwidth options found. You may need to add some in the admin panel.");
         } else {
-          setBandwidthOptions(data || []);
+          setBandwidthOptions(data);
         }
       } catch (error) {
         console.error("Error fetching bandwidth options:", error);
@@ -211,6 +205,62 @@ export function ServiceSelection({
       // Reset bandwidth selection when service changes
       if (!filtered.find(b => b.id === form.getValues().bandwidthId)) {
         form.setValue("bandwidthId", "");
+      }
+      
+      // If no bandwidth options exist for this service, we can create some placeholders
+      if (filtered.length === 0 && service) {
+        const createBandwidthOptions = async () => {
+          toast.info(`Creating bandwidth options for ${service.name}`);
+          
+          // Define different options based on service type
+          let options = [];
+          
+          if (service.type === "DIA") {
+            options = [
+              { bandwidth: 10, unit: "Mbps", monthly_price: 2000 },
+              { bandwidth: 20, unit: "Mbps", monthly_price: 3000 },
+              { bandwidth: 50, unit: "Mbps", monthly_price: 5000 },
+              { bandwidth: 100, unit: "Mbps", monthly_price: 8000 },
+            ];
+          } else if (service.type === "EBI") {
+            options = [
+              { bandwidth: 10, unit: "Mbps", monthly_price: 1500 },
+              { bandwidth: 25, unit: "Mbps", monthly_price: 2500 },
+              { bandwidth: 50, unit: "Mbps", monthly_price: 4000 },
+            ];
+          } else if (service.type === "Private WAN") {
+            options = [
+              { bandwidth: 5, unit: "Mbps", monthly_price: 3000 },
+              { bandwidth: 10, unit: "Mbps", monthly_price: 4500 },
+              { bandwidth: 20, unit: "Mbps", monthly_price: 7000 },
+            ];
+          }
+          
+          // Insert the options
+          for (const option of options) {
+            await supabase.from("bandwidth_options").insert({
+              service_id: service.id,
+              ...option,
+              is_available: true
+            });
+          }
+          
+          // Fetch the newly created options
+          const { data } = await supabase
+            .from("bandwidth_options")
+            .select("*")
+            .eq("service_id", service.id)
+            .eq("is_available", true)
+            .order("bandwidth");
+            
+          if (data) {
+            const allOptions = [...bandwidthOptions, ...data];
+            setBandwidthOptions(allOptions);
+            setFilteredBandwidth(data);
+          }
+        };
+        
+        createBandwidthOptions();
       }
     } else {
       setFilteredBandwidth([]);
