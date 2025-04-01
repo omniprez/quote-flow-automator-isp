@@ -4,9 +4,53 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/toaster";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CustomerForm, CustomerFormValues } from "@/components/quote/CustomerForm";
+import { ServiceSelection } from "@/components/quote/ServiceSelection";
+import { toast } from "sonner";
+
+interface QuoteData {
+  customerId?: string;
+  customerData?: CustomerFormValues;
+  serviceId?: string;
+  serviceName?: string;
+  bandwidthId?: string;
+  bandwidthValue?: number;
+  bandwidthUnit?: string;
+  monthlyPrice?: number;
+  setupFee?: number;
+  contractMonths?: number;
+  selectedFeatures?: string[];
+}
 
 const QuoteCreator = () => {
   const [activeStep, setActiveStep] = useState("customer");
+  const [quoteData, setQuoteData] = useState<QuoteData>({});
+
+  const handleCustomerComplete = (customerId: string, customerData: CustomerFormValues) => {
+    setQuoteData({
+      ...quoteData,
+      customerId,
+      customerData
+    });
+    setActiveStep("service");
+  };
+
+  const handleServiceComplete = (serviceData: {
+    serviceId: string;
+    serviceName: string;
+    bandwidthId: string;
+    bandwidthValue: number;
+    bandwidthUnit: string;
+    monthlyPrice: number;
+    setupFee: number;
+    contractMonths: number;
+  }) => {
+    setQuoteData({
+      ...quoteData,
+      ...serviceData
+    });
+    setActiveStep("options");
+  };
 
   return (
     <div className="container mx-auto py-6 max-w-7xl">
@@ -29,7 +73,7 @@ const QuoteCreator = () => {
         </p>
       </div>
       
-      <Tabs defaultValue="customer" className="mt-6" onValueChange={setActiveStep}>
+      <Tabs defaultValue="customer" className="mt-6" onValueChange={setActiveStep} value={activeStep}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="customer">Customer</TabsTrigger>
           <TabsTrigger value="service">Service Selection</TabsTrigger>
@@ -38,15 +82,16 @@ const QuoteCreator = () => {
         </TabsList>
         
         <TabsContent value="customer" className="mt-6">
-          <div className="text-center py-10">
-            Customer information section coming soon...
-          </div>
+          <CustomerForm onComplete={handleCustomerComplete} defaultValues={quoteData.customerData} />
         </TabsContent>
         
         <TabsContent value="service" className="mt-6">
-          <div className="text-center py-10">
-            Service selection section coming soon...
-          </div>
+          <ServiceSelection 
+            onComplete={handleServiceComplete} 
+            defaultServiceId={quoteData.serviceId}
+            defaultBandwidthId={quoteData.bandwidthId}
+            defaultContractMonths={quoteData.contractMonths}
+          />
         </TabsContent>
         
         <TabsContent value="options" className="mt-6">
