@@ -9,6 +9,12 @@ interface QuoteDocumentProps {
   serviceData?: any;
   bandwidthData?: any;
   featuresData?: any[];
+  companyLogo?: string;
+  companyName?: string;
+  companyAddress?: string;
+  companyContact?: string;
+  companyEmail?: string;
+  primaryColor?: string;
 }
 
 export function QuoteDocument({ 
@@ -16,18 +22,29 @@ export function QuoteDocument({
   customerData,
   serviceData,
   bandwidthData,
-  featuresData = []
+  featuresData = [],
+  companyLogo = "/placeholder.svg",
+  companyName = "ISP Services Ltd",
+  companyAddress = "Ebene CyberCity\nEbene, Mauritius",
+  companyContact = "+230 123 4567",
+  companyEmail = "sales@ispservices.mu",
+  primaryColor = "#000"
 }: QuoteDocumentProps) {
   if (!quoteData || !customerData) {
     return <div>No data available</div>;
   }
+
+  // Custom style for primary color elements
+  const headerStyle = {
+    color: primaryColor
+  };
 
   return (
     <div className="p-8 max-w-4xl mx-auto bg-white">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-primary mb-1">QUOTE</h1>
+          <h1 className="text-3xl font-bold mb-1" style={headerStyle}>QUOTE</h1>
           <p className="text-lg">#{quoteData.quote_number}</p>
           <p className="text-sm text-muted-foreground mt-1">
             Date: {new Date(quoteData.quote_date).toLocaleDateString()}
@@ -38,21 +55,27 @@ export function QuoteDocument({
             </p>
           )}
         </div>
-        <div className="mt-4 md:mt-0 text-right">
-          <h2 className="font-bold text-xl">ISP Services Ltd</h2>
-          <p className="mt-1">Ebene CyberCity</p>
-          <p>Ebene, Mauritius</p>
-          <p className="mt-1">Tel: +230 123 4567</p>
-          <p>Email: sales@ispservices.mu</p>
+        <div className="mt-4 md:mt-0 text-right flex flex-col items-end">
+          {companyLogo && (
+            <img 
+              src={companyLogo} 
+              alt={companyName} 
+              className="h-16 mb-2 object-contain" 
+            />
+          )}
+          <h2 className="font-bold text-xl">{companyName}</h2>
+          <p className="mt-1 whitespace-pre-line">{companyAddress}</p>
+          <p className="mt-1">Tel: {companyContact}</p>
+          <p>Email: {companyEmail}</p>
         </div>
       </div>
 
-      <Separator className="my-6" />
+      <Separator className="my-6" style={{backgroundColor: primaryColor}} />
 
       {/* Customer and Service Details */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div>
-          <h3 className="font-bold mb-2">Customer</h3>
+          <h3 className="font-bold mb-2" style={headerStyle}>Customer</h3>
           <p className="font-medium">{customerData.company_name}</p>
           <p>Contact: {customerData.contact_name}</p>
           <p>Email: {customerData.email}</p>
@@ -65,7 +88,7 @@ export function QuoteDocument({
           )}
         </div>
         <div>
-          <h3 className="font-bold mb-2">Service Details</h3>
+          <h3 className="font-bold mb-2" style={headerStyle}>Service Details</h3>
           <table className="w-full text-sm">
             <tbody>
               <tr>
@@ -95,10 +118,10 @@ export function QuoteDocument({
 
       {/* Service Details */}
       <div className="mb-8">
-        <h3 className="font-bold mb-4">Quote Summary</h3>
+        <h3 className="font-bold mb-4" style={headerStyle}>Quote Summary</h3>
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-muted">
+            <tr style={{backgroundColor: `${primaryColor}10`}}>
               <th className="py-2 px-4 text-left">Description</th>
               <th className="py-2 px-4 text-right">One-time Fee</th>
               <th className="py-2 px-4 text-right">Monthly Fee</th>
@@ -127,7 +150,7 @@ export function QuoteDocument({
               </tr>
             ))}
             
-            <tr className="font-medium">
+            <tr className="font-medium" style={{backgroundColor: `${primaryColor}05`}}>
               <td className="py-3 px-4">Total</td>
               <td className="py-3 px-4 text-right">
                 MUR {formatCurrency(quoteData.total_one_time_cost)}
@@ -143,14 +166,14 @@ export function QuoteDocument({
       {/* Notes */}
       {quoteData.notes && (
         <div className="mb-8">
-          <h3 className="font-bold mb-2">Notes</h3>
+          <h3 className="font-bold mb-2" style={headerStyle}>Notes</h3>
           <p className="text-sm whitespace-pre-line">{quoteData.notes}</p>
         </div>
       )}
 
       {/* Terms and conditions */}
       <div className="mt-8 text-sm">
-        <h3 className="font-bold mb-2">Terms & Conditions</h3>
+        <h3 className="font-bold mb-2" style={headerStyle}>Terms & Conditions</h3>
         <ol className="list-decimal pl-5 space-y-1">
           <li>All prices are in Mauritian Rupees (MUR) and exclusive of VAT.</li>
           <li>This quote is valid for 30 days from the issue date.</li>
@@ -161,9 +184,9 @@ export function QuoteDocument({
       </div>
 
       {/* Footer */}
-      <div className="mt-12 pt-4 border-t text-sm text-center text-muted-foreground">
+      <div className="mt-12 pt-4 border-t text-sm text-center text-muted-foreground" style={{borderColor: `${primaryColor}20`}}>
         <p>Thank you for your business!</p>
-        <p className="mt-1">For any questions, please contact your account manager or call +230 123 4567</p>
+        <p className="mt-1">For any questions, please contact your account manager or call {companyContact}</p>
       </div>
     </div>
   );

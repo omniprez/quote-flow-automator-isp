@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Download, Send, Printer } from "lucide-react";
+import { ArrowLeft, Download, Send, Printer, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -11,6 +11,18 @@ import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QuoteDocument } from "@/components/quote/QuoteDocument";
 import { generatePdf } from "@/lib/pdf-generator";
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 const QuoteView = () => {
   const { quoteId } = useParams();
@@ -22,6 +34,32 @@ const QuoteView = () => {
   const [bandwidthData, setBandwidthData] = useState<any>(null);
   const [featuresData, setFeaturesData] = useState<any[]>([]);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  
+  // Company branding states
+  const [companyLogo, setCompanyLogo] = useState<string>("/placeholder.svg");
+  const [companyName, setCompanyName] = useState<string>("ISP Services Ltd");
+  const [companyAddress, setCompanyAddress] = useState<string>("Ebene CyberCity\nEbene, Mauritius");
+  const [companyContact, setCompanyContact] = useState<string>("+230 123 4567");
+  const [companyEmail, setCompanyEmail] = useState<string>("sales@ispservices.mu");
+  const [primaryColor, setPrimaryColor] = useState<string>("#3b82f6");
+
+  // Load company settings from localStorage on mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('companySettings');
+    if (savedSettings) {
+      try {
+        const settings = JSON.parse(savedSettings);
+        if (settings.companyLogo) setCompanyLogo(settings.companyLogo);
+        if (settings.companyName) setCompanyName(settings.companyName);
+        if (settings.companyAddress) setCompanyAddress(settings.companyAddress);
+        if (settings.companyContact) setCompanyContact(settings.companyContact);
+        if (settings.companyEmail) setCompanyEmail(settings.companyEmail);
+        if (settings.primaryColor) setPrimaryColor(settings.primaryColor);
+      } catch (e) {
+        console.error("Error parsing company settings:", e);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const fetchQuoteData = async () => {
@@ -70,6 +108,33 @@ const QuoteView = () => {
     
     fetchQuoteData();
   }, [quoteId]);
+
+  const handleSaveSettings = () => {
+    const settings = {
+      companyLogo,
+      companyName,
+      companyAddress,
+      companyContact,
+      companyEmail,
+      primaryColor
+    };
+    
+    localStorage.setItem('companySettings', JSON.stringify(settings));
+    toast.success("Company branding saved successfully");
+  };
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          setCompanyLogo(e.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleDownloadPdf = async () => {
     try {
@@ -167,12 +232,120 @@ const QuoteView = () => {
             <Printer className="mr-2 h-4 w-4" />
             Print Quote
           </Button>
+          
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex-1">
+                <Settings className="mr-2 h-4 w-4" />
+                Company Branding
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Company Branding</DialogTitle>
+                <DialogDescription>
+                  Customize your quote with your company branding
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="logo">Company Logo</Label>
+                  <div className="flex items-center gap-4">
+                    {companyLogo && (
+                      <img 
+                        src={companyLogo} 
+                        alt="Company Logo" 
+                        className="h-12 w-auto object-contain"
+                      />
+                    )}
+                    <Input
+                      id="logo"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoChange}
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="companyName">Company Name</Label>
+                  <Input
+                    id="companyName"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="companyAddress">Company Address</Label>
+                  <Textarea
+                    id="companyAddress"
+                    value={companyAddress}
+                    onChange={(e) => setCompanyAddress(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="companyContact">Phone Number</Label>
+                  <Input
+                    id="companyContact"
+                    value={companyContact}
+                    onChange={(e) => setCompanyContact(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="companyEmail">Email</Label>
+                  <Input
+                    id="companyEmail"
+                    type="email"
+                    value={companyEmail}
+                    onChange={(e) => setCompanyEmail(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="primaryColor">Primary Color</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="primaryColor"
+                      type="color"
+                      value={primaryColor}
+                      onChange={(e) => setPrimaryColor(e.target.value)}
+                      className="w-16 h-10 p-1"
+                    />
+                    <Input
+                      value={primaryColor}
+                      onChange={(e) => setPrimaryColor(e.target.value)}
+                      placeholder="#000000"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <DialogClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <DialogClose asChild>
+                  <Button onClick={handleSaveSettings}>Save Changes</Button>
+                </DialogClose>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
         
         <Separator className="my-2" />
         
         <div id="quote-document" className="bg-white rounded-md shadow-sm print:shadow-none">
-          <QuoteDocument quoteData={quoteData} customerData={customerData} />
+          <QuoteDocument 
+            quoteData={quoteData} 
+            customerData={customerData}
+            serviceData={serviceData}
+            bandwidthData={bandwidthData}
+            featuresData={featuresData}
+            companyLogo={companyLogo}
+            companyName={companyName}
+            companyAddress={companyAddress}
+            companyContact={companyContact}
+            companyEmail={companyEmail}
+            primaryColor={primaryColor}
+          />
         </div>
       </div>
     </div>
