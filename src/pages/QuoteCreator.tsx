@@ -6,6 +6,8 @@ import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CustomerForm, CustomerFormValues } from "@/components/quote/CustomerForm";
 import { ServiceSelection } from "@/components/quote/ServiceSelection";
+import { OptionsFeatures } from "@/components/quote/OptionsFeatures";
+import { QuoteReview } from "@/components/quote/QuoteReview";
 import { toast } from "sonner";
 
 interface QuoteData {
@@ -19,7 +21,12 @@ interface QuoteData {
   monthlyPrice?: number;
   setupFee?: number;
   contractMonths?: number;
-  selectedFeatures?: string[];
+  selectedFeatures?: {
+    ids: string[];
+    names: string[];
+    monthlyTotal: number;
+    oneTimeTotal: number;
+  };
 }
 
 const QuoteCreator = () => {
@@ -50,6 +57,24 @@ const QuoteCreator = () => {
       ...serviceData
     });
     setActiveStep("options");
+  };
+
+  const handleOptionsComplete = (featuresData: {
+    ids: string[];
+    names: string[];
+    monthlyTotal: number;
+    oneTimeTotal: number;
+  }) => {
+    setQuoteData({
+      ...quoteData,
+      selectedFeatures: featuresData
+    });
+    setActiveStep("review");
+  };
+
+  const handleQuoteGenerated = (quoteId: string) => {
+    // In a real app, might redirect to the quote view page
+    console.log("Quote generated with ID:", quoteId);
   };
 
   return (
@@ -95,15 +120,18 @@ const QuoteCreator = () => {
         </TabsContent>
         
         <TabsContent value="options" className="mt-6">
-          <div className="text-center py-10">
-            Options and features section coming soon...
-          </div>
+          <OptionsFeatures
+            onComplete={handleOptionsComplete}
+            serviceId={quoteData.serviceId}
+            defaultSelectedFeatures={quoteData.selectedFeatures?.ids}
+          />
         </TabsContent>
         
         <TabsContent value="review" className="mt-6">
-          <div className="text-center py-10">
-            Quote review and generation section coming soon...
-          </div>
+          <QuoteReview
+            {...quoteData}
+            onQuoteGenerated={handleQuoteGenerated}
+          />
         </TabsContent>
       </Tabs>
       
