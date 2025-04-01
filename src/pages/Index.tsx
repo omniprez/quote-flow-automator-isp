@@ -9,7 +9,7 @@ const Index = () => {
       <div className="text-center space-y-6">
         <h1 className="text-4xl font-bold mb-4">ISP Quote Flow Automator</h1>
         <p className="text-xl text-gray-600 max-w-md mx-auto">
-          Create and manage quotes for ISP services with our automated workflow system.
+          Create and manage quotes for ISP services in Mauritius with our automated workflow system.
         </p>
         <div className="flex justify-center space-x-4 mt-8">
           <Button asChild size="lg">

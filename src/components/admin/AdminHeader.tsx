@@ -18,7 +18,7 @@ const AdminHeader = () => {
         <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
       </div>
       <p className="text-muted-foreground">
-        Manage service offerings, bandwidth options, and additional features.
+        Manage ISP services, bandwidth options, and additional features for Mauritius.
       </p>
     </div>
   );
