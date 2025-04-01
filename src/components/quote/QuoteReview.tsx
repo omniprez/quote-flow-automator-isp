@@ -1,5 +1,5 @@
-
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,9 +9,10 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerFormValues } from "./CustomerForm";
 import { Check, FileText, Loader2 } from "lucide-react";
+import { formatCurrency } from "@/lib/formatters";
 
 interface QuoteReviewProps {
-  customerId?: string; // Made optional with ?
+  customerId?: string;
   customerData?: CustomerFormValues;
   serviceId?: string;
   serviceName?: string;
@@ -44,6 +45,7 @@ export function QuoteReview({
   selectedFeatures,
   onQuoteGenerated,
 }: QuoteReviewProps) {
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notes, setNotes] = useState("");
   const [quoteGenerated, setQuoteGenerated] = useState(false);
@@ -51,13 +53,6 @@ export function QuoteReview({
 
   const totalMonthlyPrice = (monthlyPrice || 0) + (selectedFeatures?.monthlyTotal || 0);
   const totalOneTimeFee = (setupFee || 0) + (selectedFeatures?.oneTimeTotal || 0);
-
-  const formatCurrency = (amount: number) => {
-    return amount.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
 
   const generateQuoteNumber = () => {
     const date = new Date();
@@ -113,6 +108,11 @@ export function QuoteReview({
       if (onQuoteGenerated) {
         onQuoteGenerated(quote.id);
       }
+      
+      // Wait a moment to show the success message before redirecting
+      setTimeout(() => {
+        navigate(`/quotes/${quote.id}`);
+      }, 1500);
     } catch (error) {
       console.error("Error generating quote:", error);
       toast.error("Failed to generate quote");
@@ -122,8 +122,11 @@ export function QuoteReview({
   };
 
   const handleViewQuote = () => {
-    // In a real app, this would navigate to the quote view page
-    toast.info("Quote viewing functionality will be implemented later");
+    if (quoteId) {
+      navigate(`/quotes/${quoteId}`);
+    } else {
+      toast.error("Quote ID not found");
+    }
   };
 
   return (
