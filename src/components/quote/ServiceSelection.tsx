@@ -22,6 +22,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 // Define the validation schema
 const serviceSchema = z.object({
@@ -78,6 +79,7 @@ export function ServiceSelection({
   const [isLoading, setIsLoading] = useState(true);
   const [selectedService, setSelectedService] = useState<ServiceData | null>(null);
   const [selectedBandwidth, setSelectedBandwidth] = useState<BandwidthOption | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Initialize the form
   const form = useForm<ServiceFormValues>({
@@ -95,29 +97,94 @@ export function ServiceSelection({
   useEffect(() => {
     const fetchServices = async () => {
       try {
+        console.log("Fetching services...");
+        setError(null);
         const { data, error } = await supabase
           .from("services")
           .select("*")
           .order("name");
 
-        if (error) throw error;
-        setServices(data || []);
+        if (error) {
+          throw error;
+        }
+        
+        console.log("Services data:", data);
+        if (data && data.length === 0) {
+          // If no services are found, add a placeholder for testing
+          setServices([
+            {
+              id: "placeholder-1",
+              name: "Fiber Internet",
+              type: "Internet",
+              description: "High-speed fiber internet connection",
+              setup_fee: 5000,
+              min_contract_months: 12
+            },
+            {
+              id: "placeholder-2",
+              name: "Business VoIP",
+              type: "Voice",
+              description: "Voice over IP telephony service",
+              setup_fee: 3000,
+              min_contract_months: 12
+            }
+          ]);
+          setError("Using placeholder services as no services were found in the database");
+        } else {
+          setServices(data || []);
+        }
       } catch (error) {
         console.error("Error fetching services:", error);
+        setError("Failed to load services. Please try again later.");
         toast.error("Failed to load services");
       }
     };
 
     const fetchBandwidthOptions = async () => {
       try {
+        console.log("Fetching bandwidth options...");
         const { data, error } = await supabase
           .from("bandwidth_options")
           .select("*")
           .eq("is_available", true)
           .order("bandwidth");
 
-        if (error) throw error;
-        setBandwidthOptions(data || []);
+        if (error) {
+          throw error;
+        }
+        
+        console.log("Bandwidth options data:", data);
+        if (data && data.length === 0) {
+          // If no bandwidth options are found, add placeholders for testing
+          setBandwidthOptions([
+            {
+              id: "bw-placeholder-1",
+              service_id: "placeholder-1",
+              bandwidth: 100,
+              unit: "Mbps",
+              monthly_price: 3500,
+              is_available: true
+            },
+            {
+              id: "bw-placeholder-2",
+              service_id: "placeholder-1",
+              bandwidth: 200,
+              unit: "Mbps",
+              monthly_price: 5000,
+              is_available: true
+            },
+            {
+              id: "bw-placeholder-3",
+              service_id: "placeholder-2",
+              bandwidth: 10,
+              unit: "Lines",
+              monthly_price: 2000,
+              is_available: true
+            }
+          ]);
+        } else {
+          setBandwidthOptions(data || []);
+        }
       } catch (error) {
         console.error("Error fetching bandwidth options:", error);
         toast.error("Failed to load bandwidth options");
@@ -181,12 +248,22 @@ export function ServiceSelection({
   };
 
   if (isLoading) {
-    return <div className="text-center py-10">Loading services...</div>;
+    return (
+      <div className="text-center py-10">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+        <p>Loading services...</p>
+      </div>
+    );
   }
 
   return (
     <Card>
       <CardContent className="pt-6">
+        {error && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-700 rounded-md text-sm">
+            {error}
+          </div>
+        )}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -207,11 +284,17 @@ export function ServiceSelection({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {services.map((service) => (
-                          <SelectItem key={service.id} value={service.id}>
-                            {service.name} ({service.type})
-                          </SelectItem>
-                        ))}
+                        {services.length === 0 ? (
+                          <div className="px-2 py-4 text-center text-muted-foreground">
+                            No services available
+                          </div>
+                        ) : (
+                          services.map((service) => (
+                            <SelectItem key={service.id} value={service.id}>
+                              {service.name} ({service.type})
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -237,11 +320,17 @@ export function ServiceSelection({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {filteredBandwidth.map((option) => (
-                          <SelectItem key={option.id} value={option.id}>
-                            {option.bandwidth} {option.unit} - MUR {option.monthly_price.toLocaleString()} /month
-                          </SelectItem>
-                        ))}
+                        {filteredBandwidth.length === 0 ? (
+                          <div className="px-2 py-4 text-center text-muted-foreground">
+                            {watchServiceId ? "No bandwidth options available" : "Select a service first"}
+                          </div>
+                        ) : (
+                          filteredBandwidth.map((option) => (
+                            <SelectItem key={option.id} value={option.id}>
+                              {option.bandwidth} {option.unit} - MUR {option.monthly_price.toLocaleString()} /month
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
