@@ -40,7 +40,7 @@ export function ServiceSelection({
   const [selectedService, setSelectedService] = useState<ServiceData | null>(null);
   const [selectedBandwidth, setSelectedBandwidth] = useState<BandwidthOption | null>(null);
 
-  // Initialize the form
+  // Initialize the form with default values
   const form = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceSchema),
     defaultValues: {
@@ -48,9 +48,11 @@ export function ServiceSelection({
       bandwidthId: defaultBandwidthId || "",
       contractMonths: defaultContractMonths || 12,
     },
+    mode: "onChange" // Validate on change for better user experience
   });
 
   const watchServiceId = form.watch("serviceId");
+  const watchBandwidthId = form.watch("bandwidthId");
 
   // Filter bandwidth options based on selected service
   useEffect(() => {
@@ -66,6 +68,7 @@ export function ServiceSelection({
       // Reset bandwidth selection when service changes
       if (!filtered.find(b => b.id === form.getValues().bandwidthId)) {
         form.setValue("bandwidthId", "");
+        setSelectedBandwidth(null);
       }
     } else {
       setFilteredBandwidth([]);
@@ -75,21 +78,22 @@ export function ServiceSelection({
 
   // Update selected bandwidth when bandwidth ID changes
   useEffect(() => {
-    const bandwidthId = form.getValues().bandwidthId;
-    if (bandwidthId) {
-      const bandwidth = bandwidthOptions.find((b) => b.id === bandwidthId);
+    if (watchBandwidthId) {
+      const bandwidth = bandwidthOptions.find((b) => b.id === watchBandwidthId);
       setSelectedBandwidth(bandwidth || null);
     } else {
       setSelectedBandwidth(null);
     }
-  }, [form, bandwidthOptions]);
+  }, [watchBandwidthId, bandwidthOptions]);
 
   const onSubmit = (data: ServiceFormValues) => {
+    // Validate that we have both service and bandwidth before proceeding
     if (!selectedService || !selectedBandwidth) {
       toast.error("Please select both service and bandwidth");
       return;
     }
 
+    // Pass the selected data to the parent component
     onComplete({
       serviceId: selectedService.id,
       serviceName: selectedService.name,
@@ -140,7 +144,10 @@ export function ServiceSelection({
             )}
 
             <div className="flex justify-end">
-              <Button type="submit">
+              <Button 
+                type="submit"
+                disabled={!form.formState.isValid || !selectedService || !selectedBandwidth}
+              >
                 Save & Continue
               </Button>
             </div>
