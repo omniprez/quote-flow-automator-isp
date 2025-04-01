@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 const AdminHeader = () => {
   return (
-    <div className="flex flex-col space-y-2">
+    <div className="flex flex-col space-y-3">
       <div className="flex items-center">
         <Link 
           to="/" 
@@ -18,7 +18,8 @@ const AdminHeader = () => {
         <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
       </div>
       <p className="text-muted-foreground">
-        Manage ISP services, bandwidth options, and additional features for Mauritius.
+        Manage ISP services, bandwidth options, and additional features for telecommunication services in Mauritius.
+        All prices are in Mauritian Rupees (MUR).
       </p>
     </div>
   );
