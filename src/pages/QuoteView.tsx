@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Download, Send, Printer, Settings } from "lucide-react";
@@ -36,6 +36,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  SheetClose,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -51,6 +52,9 @@ const QuoteView = () => {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const { user } = useAuth();
+  
+  // Create refs for the sheet close button
+  const sheetCloseRef = useRef<HTMLButtonElement>(null);
   
   // Company branding states
   const [companyLogo, setCompanyLogo] = useState<string>("/placeholder.svg");
@@ -295,6 +299,13 @@ const QuoteView = () => {
     }
   };
 
+  // Function to close the sheet
+  const closeSheet = () => {
+    if (sheetCloseRef.current) {
+      sheetCloseRef.current.click();
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto py-6 max-w-4xl">
@@ -396,6 +407,7 @@ const QuoteView = () => {
               </Button>
             </SheetTrigger>
             <SheetContent className="overflow-y-auto">
+              <SheetClose ref={sheetCloseRef} className="hidden" />
               <SheetHeader>
                 <SheetTitle>Company Branding</SheetTitle>
                 <SheetDescription>
@@ -404,31 +416,31 @@ const QuoteView = () => {
               </SheetHeader>
               
               <ScrollArea className="h-[calc(100vh-180px)] pr-4">
+                {templates.length > 0 && (
+                  <div className="grid gap-2">
+                    <Label htmlFor="template">Use Template</Label>
+                    <Select
+                      value={selectedTemplate || ""}
+                      onValueChange={(value) => {
+                        setSelectedTemplate(value);
+                        handleApplyTemplate(value);
+                      }}
+                    >
+                      <SelectTrigger id="template">
+                        <SelectValue placeholder="Select a template..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {templates.map((template) => (
+                          <SelectItem key={template.id} value={template.id}>
+                            {template.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                
                 <div className="space-y-6 py-4">
-                  {templates.length > 0 && (
-                    <div className="grid gap-2">
-                      <Label htmlFor="template">Use Template</Label>
-                      <Select
-                        value={selectedTemplate || ""}
-                        onValueChange={(value) => {
-                          setSelectedTemplate(value);
-                          handleApplyTemplate(value);
-                        }}
-                      >
-                        <SelectTrigger id="template">
-                          <SelectValue placeholder="Select a template..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {templates.map((template) => (
-                            <SelectItem key={template.id} value={template.id}>
-                              {template.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                  
                   <div className="grid gap-4">
                     <div className="grid gap-2">
                       <Label htmlFor="logo">Company Logo</Label>
@@ -505,10 +517,10 @@ const QuoteView = () => {
               </ScrollArea>
               
               <div className="mt-6 flex justify-end gap-2">
-                <Button variant="outline" onClick={() => document.querySelector('.cl-sheet-close')?.click()}>Cancel</Button>
+                <Button variant="outline" onClick={closeSheet}>Cancel</Button>
                 <Button onClick={() => {
                   handleSaveSettings();
-                  document.querySelector('.cl-sheet-close')?.click();
+                  closeSheet();
                 }}>
                   Save Changes
                 </Button>
