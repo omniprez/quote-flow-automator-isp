@@ -13,7 +13,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   const { user, isLoading, userRole, refreshUserRole } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [hasAttemptedRedirect, setHasAttemptedRedirect] = useState(false);
+  const [redirectAttempted, setRedirectAttempted] = useState(false);
 
   // Debug output
   useEffect(() => {
@@ -34,12 +34,12 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
 
   // Effect to handle authentication redirects
   useEffect(() => {
-    if (!isLoading && !user && !hasAttemptedRedirect) {
+    if (!isLoading && !user && !redirectAttempted && location.pathname !== '/login') {
       console.log("No user detected, redirecting to login");
-      setHasAttemptedRedirect(true);
+      setRedirectAttempted(true);
       navigate('/login', { replace: true });
     }
-  }, [isLoading, user, navigate, hasAttemptedRedirect]);
+  }, [isLoading, user, navigate, redirectAttempted, location.pathname]);
 
   if (isLoading) {
     return (
@@ -49,7 +49,8 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     );
   }
 
-  if (!user) {
+  // If not authenticated and not on login page, redirect to login
+  if (!user && location.pathname !== '/login') {
     console.log("User not authenticated, redirecting to /login");
     return <Navigate to="/login" replace />;
   }

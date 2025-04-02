@@ -27,11 +27,13 @@ const Login = () => {
 
   // If user is already logged in, redirect to dashboard
   useEffect(() => {
-    if (user) {
+    // Only redirect if we have confirmation the user is logged in
+    // AND we're on the login page (to prevent redirect loops)
+    if (user && location.pathname === '/login') {
       console.log("User already logged in, redirecting to dashboard");
-      navigate("/");
+      navigate("/", { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, location.pathname]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +60,7 @@ const Login = () => {
         if (error) throw error;
         console.log("Login successful, redirecting to dashboard");
         toast.success("Logged in successfully!");
-        navigate("/");
+        navigate("/", { replace: true });
       }
     } catch (error: any) {
       console.error("Authentication error:", error);

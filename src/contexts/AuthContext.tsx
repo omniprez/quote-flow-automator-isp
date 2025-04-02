@@ -64,17 +64,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (!isMounted) return;
         
-        if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
           setSession(null);
           setUser(null);
           setUserRole('user');
           setIsLoading(false);
-        } else {
+        } else if (newSession) {
           setSession(newSession);
-          setUser(newSession?.user ?? null);
+          setUser(newSession.user ?? null);
           
           // If user logged in, fetch their role
-          if (newSession?.user) {
+          if (newSession.user) {
             setTimeout(() => {
               if (isMounted) fetchUserRole(newSession.user.id);
             }, 0);
@@ -111,12 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log("Signing out...");
       
-      // Clear local state first
-      setUser(null);
-      setSession(null);
-      setUserRole('user');
-      
-      // Sign out with Supabase
+      // Sign out with Supabase first
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Error during Supabase sign out:", error);
@@ -124,21 +119,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log("Supabase sign out successful");
       }
       
-      // Force navigation to login
+      // Clear local state
+      setUser(null);
+      setSession(null);
+      setUserRole('user');
+      
+      // Navigate to login page
       window.location.href = '/login';
       
-      // Add a failsafe redirect after a short delay
-      setTimeout(() => {
-        // Check if we're still not on the login page
-        if (window.location.pathname !== '/login') {
-          console.log("Failsafe redirect triggered");
-          window.location.replace('/login');
-        }
-      }, 500);
     } catch (err) {
       console.error("Exception during sign out:", err);
       // Force redirect to login even on error
-      window.location.replace('/login');
+      window.location.href = '/login';
     }
   };
 
