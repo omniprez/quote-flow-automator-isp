@@ -14,6 +14,11 @@ const Index = () => {
     refreshUserRole();
   }, [refreshUserRole]);
   
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    await signOut();
+  };
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-50 to-blue-100">
       <div className="text-center space-y-8 max-w-3xl px-4">
@@ -51,10 +56,7 @@ const Index = () => {
           </Button>
           
           <Button 
-            onClick={(e) => {
-              e.preventDefault();
-              signOut();
-            }} 
+            onClick={handleLogout} 
             variant="outline" 
             size="lg" 
             className="w-full border-indigo-300 text-indigo-700 hover:bg-indigo-100 transition-all duration-300"
