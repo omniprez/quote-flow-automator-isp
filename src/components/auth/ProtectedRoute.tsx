@@ -1,5 +1,5 @@
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
@@ -10,7 +10,14 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
-  const { user, isLoading, userRole } = useAuth();
+  const { user, isLoading, userRole, refreshUserRole } = useAuth();
+
+  // Force a refresh of the user role on mount
+  useEffect(() => {
+    if (user) {
+      refreshUserRole();
+    }
+  }, [user, refreshUserRole]);
 
   if (isLoading) {
     return (
@@ -26,6 +33,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
 
   // Check for admin requirement
   if (requireAdmin && userRole !== 'admin') {
+    console.log("Access denied: User role is", userRole, "but admin is required");
     return <Navigate to="/" replace />;
   }
 

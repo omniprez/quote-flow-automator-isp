@@ -4,9 +4,15 @@ import { Link } from "react-router-dom";
 import { Settings, FileText, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 
 const Index = () => {
-  const { userRole, signOut } = useAuth();
+  const { userRole, signOut, refreshUserRole } = useAuth();
+  
+  // Force refresh role on mount to ensure we have the latest role
+  useEffect(() => {
+    refreshUserRole();
+  }, [refreshUserRole]);
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-50 to-blue-100">

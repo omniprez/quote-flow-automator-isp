@@ -11,6 +11,7 @@ type AuthContextType = {
   isLoading: boolean;
   userRole: UserRole;
   signOut: () => Promise<void>;
+  refreshUserRole: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,10 +22,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [userRole, setUserRole] = useState<UserRole>('user');
 
+  const fetchUserRole = async (userId: string) => {
+    try {
+      // Check if user is an admin
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('user_id')
+        .eq('user_id', userId)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error("Error fetching user role:", error);
+        setUserRole('user'); // Default to user role if there's an error
+        return;
+      }
+      
+      if (data) {
+        setUserRole('admin');
+      } else {
+        setUserRole('user');
+      }
+    } catch (error) {
+      console.error("Exception fetching user role:", error);
+      setUserRole('user'); // Default to user role if there's an error
+    }
+  };
+
+  const refreshUserRole = async () => {
+    if (user?.id) {
+      await fetchUserRole(user.id);
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -57,32 +90,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchUserRole = async (userId: string) => {
-    try {
-      // Check if user is an admin (this is a simple check - you should modify based on your user roles implementation)
-      const { data } = await supabase
-        .from('admin_users')
-        .select('user_id')
-        .eq('user_id', userId)
-        .single();
-      
-      if (data) {
-        setUserRole('admin');
-      } else {
-        setUserRole('user');
-      }
-    } catch (error) {
-      console.error("Error fetching user role:", error);
-      setUserRole('user'); // Default to user role if there's an error
-    }
-  };
-
   const signOut = async () => {
     await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, isLoading, userRole, signOut }}>
+    <AuthContext.Provider value={{ session, user, isLoading, userRole, signOut, refreshUserRole }}>
       {children}
     </AuthContext.Provider>
   );
