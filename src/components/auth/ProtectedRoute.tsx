@@ -1,6 +1,6 @@
 
 import { ReactNode, useEffect } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
@@ -11,6 +11,7 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
   const { user, isLoading, userRole, refreshUserRole } = useAuth();
+  const navigate = useNavigate();
 
   // Force a refresh of the user role on mount
   useEffect(() => {
@@ -18,6 +19,13 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
       refreshUserRole();
     }
   }, [user, refreshUserRole]);
+
+  // Effect to handle authentication redirects
+  useEffect(() => {
+    if (!isLoading && !user) {
+      navigate('/login', { replace: true });
+    }
+  }, [isLoading, user, navigate]);
 
   if (isLoading) {
     return (

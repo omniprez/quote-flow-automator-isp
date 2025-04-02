@@ -91,19 +91,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
-      // First clear any local state
+      // Clear local state first
       setUser(null);
       setSession(null);
       setUserRole('user');
       
-      // Then sign out with Supabase
+      // Sign out with Supabase
       await supabase.auth.signOut();
       
-      // Force a full page reload to clear any state and redirect to login
-      window.location.replace('/login');
+      // Attempt direct navigation first
+      window.location.href = '/login';
+      
+      // Set a fallback to ensure redirection
+      setTimeout(() => {
+        if (window.location.pathname !== '/login') {
+          console.log("Fallback redirect triggered");
+          window.location.replace('/login');
+        }
+      }, 300);
     } catch (err) {
       console.error("Exception during sign out:", err);
-      // Even if there's an error, force redirect to login
+      // Force redirect to login even on error
       window.location.replace('/login');
     }
   };
