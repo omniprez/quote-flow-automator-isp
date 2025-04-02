@@ -22,6 +22,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [userRole, setUserRole] = useState<UserRole>('user');
 
+  // Debug output for session state changes
+  useEffect(() => {
+    console.log("Auth state updated:", { 
+      hasUser: !!user, 
+      isLoading, 
+      userRole 
+    });
+  }, [user, isLoading, userRole]);
+
   const fetchUserRole = async (userId: string) => {
     try {
       // Check if user is an admin
@@ -111,6 +120,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log("Signing out...");
       
+      // Clear local state first to prevent flash of protected content
+      setUser(null);
+      setSession(null);
+      setUserRole('user');
+      
       // Sign out with Supabase
       const { error } = await supabase.auth.signOut();
       if (error) {
@@ -119,19 +133,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log("Supabase sign out successful");
       }
       
-      // Clear local state
-      setUser(null);
-      setSession(null);
-      setUserRole('user');
-      
-      // Use window.location.replace for more forceful navigation that won't be
-      // intercepted by React Router
-      window.location.replace('/login');
+      // Hard redirect to login page to ensure complete refresh
+      window.location.href = '/login';
       
     } catch (err) {
       console.error("Exception during sign out:", err);
       // Force redirect to login even on error
-      window.location.replace('/login');
+      window.location.href = '/login';
     }
   };
 

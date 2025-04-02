@@ -21,9 +21,10 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
       isLoading,
       hasUser: !!user,
       userRole,
-      currentPath: location.pathname
+      currentPath: location.pathname,
+      redirectAttempted
     });
-  }, [isLoading, user, userRole, location.pathname]);
+  }, [isLoading, user, userRole, location.pathname, redirectAttempted]);
 
   // Force a refresh of the user role on mount
   useEffect(() => {
@@ -32,17 +33,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     }
   }, [user, refreshUserRole]);
 
-  // Effect to handle authentication redirects
-  useEffect(() => {
-    // Only redirect if not loading, not authenticated, and not already on login page
-    if (!isLoading && !user && !redirectAttempted && location.pathname !== '/login') {
-      console.log("No user detected, redirecting to login");
-      setRedirectAttempted(true);
-      // Use replace: true to avoid adding to history stack
-      navigate('/login', { replace: true });
-    }
-  }, [isLoading, user, navigate, redirectAttempted, location.pathname]);
-
+  // Simplified redirect logic - only use one approach for redirects
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -51,7 +42,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     );
   }
 
-  // If not authenticated and not on login page, redirect to login using Navigate component
+  // If not authenticated and not on login page, redirect to login
   if (!user && location.pathname !== '/login') {
     console.log("User not authenticated, redirecting to /login");
     return <Navigate to="/login" replace />;
