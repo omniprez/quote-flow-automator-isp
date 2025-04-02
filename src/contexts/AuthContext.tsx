@@ -1,4 +1,3 @@
-
 import { createContext, useState, useEffect, useContext, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
@@ -120,23 +119,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log("Signing out...");
       
-      // Clear local state immediately
+      // Clear local authentication state first
       setUser(null);
       setSession(null);
       setUserRole('user');
       
-      // Then sign out with Supabase (but don't wait for it to complete)
-      // This prevents any redirect loops that might occur
-      supabase.auth.signOut().catch(e => console.error("Error during Supabase signOut:", e));
+      // Use a synchronous window.location replacement to /login 
+      // This is more reliable than using React Router navigation
+      window.location.replace('/login');
       
-      // Force a hard browser navigation to /login
-      // This ensures a complete state reset and prevents React Router issues
-      window.location.href = "/login";
-      
+      // Then sign out with Supabase (but don't wait for completion)
+      // This order ensures the UI responds immediately while auth cleanup happens in background
+      await supabase.auth.signOut().catch(e => {
+        console.error("Error during sign out:", e);
+      });
     } catch (err) {
       console.error("Exception during sign out:", err);
-      // Force navigation even on error
-      window.location.href = "/login";
+      // Force navigation even on error - this is the most reliable approach
+      window.location.replace('/login');
     }
   };
 

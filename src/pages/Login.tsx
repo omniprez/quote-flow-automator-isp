@@ -20,13 +20,16 @@ const Login = () => {
   const location = useLocation();
   const { user } = useAuth();
   
-  // If the user is already authenticated, redirect to the homepage
+  // If user is already authenticated, redirect to homepage
   useEffect(() => {
     if (user) {
-      console.log("User already authenticated, redirecting to homepage");
-      navigate("/", { replace: true });
+      // Only redirect if we're on the login page (prevent loops)
+      if (location.pathname === '/login') {
+        console.log("User already authenticated, redirecting to homepage");
+        navigate("/", { replace: true });
+      }
     }
-  }, [user, navigate]);
+  }, [user, navigate, location.pathname]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
