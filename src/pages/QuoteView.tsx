@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +29,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const QuoteView = () => {
   const { quoteId } = useParams();
@@ -379,126 +387,134 @@ const QuoteView = () => {
             Print Quote
           </Button>
           
-          <Dialog>
-            <DialogTrigger asChild>
+          {/* Replace Dialog with Sheet for company branding */}
+          <Sheet>
+            <SheetTrigger asChild>
               <Button variant="outline" className="flex-1">
                 <Settings className="mr-2 h-4 w-4" />
                 Company Branding
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Company Branding</DialogTitle>
-                <DialogDescription>
+            </SheetTrigger>
+            <SheetContent className="overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>Company Branding</SheetTitle>
+                <SheetDescription>
                   Customize your quote with your company branding
-                </DialogDescription>
-              </DialogHeader>
+                </SheetDescription>
+              </SheetHeader>
               
-              {templates.length > 0 && (
-                <div className="grid gap-2 pt-4 border-t">
-                  <Label htmlFor="template">Use Template</Label>
-                  <Select
-                    value={selectedTemplate || ""}
-                    onValueChange={(value) => {
-                      setSelectedTemplate(value);
-                      handleApplyTemplate(value);
-                    }}
-                  >
-                    <SelectTrigger id="template">
-                      <SelectValue placeholder="Select a template..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {templates.map((template) => (
-                        <SelectItem key={template.id} value={template.id}>
-                          {template.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-              
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="logo">Company Logo</Label>
-                  <div className="flex items-center gap-4">
-                    {companyLogo && (
-                      <img 
-                        src={companyLogo} 
-                        alt="Company Logo" 
-                        className="h-12 w-auto object-contain"
+              <ScrollArea className="h-[calc(100vh-180px)] pr-4">
+                <div className="space-y-6 py-4">
+                  {templates.length > 0 && (
+                    <div className="grid gap-2">
+                      <Label htmlFor="template">Use Template</Label>
+                      <Select
+                        value={selectedTemplate || ""}
+                        onValueChange={(value) => {
+                          setSelectedTemplate(value);
+                          handleApplyTemplate(value);
+                        }}
+                      >
+                        <SelectTrigger id="template">
+                          <SelectValue placeholder="Select a template..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {templates.map((template) => (
+                            <SelectItem key={template.id} value={template.id}>
+                              {template.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  
+                  <div className="grid gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="logo">Company Logo</Label>
+                      <div className="flex items-center gap-4">
+                        {companyLogo && (
+                          <img 
+                            src={companyLogo} 
+                            alt="Company Logo" 
+                            className="h-12 w-auto object-contain"
+                          />
+                        )}
+                        <Input
+                          id="logo"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleLogoChange}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="companyName">Company Name</Label>
+                      <Input
+                        id="companyName"
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
                       />
-                    )}
-                    <Input
-                      id="logo"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleLogoChange}
-                    />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="companyAddress">Company Address</Label>
+                      <Textarea
+                        id="companyAddress"
+                        value={companyAddress}
+                        onChange={(e) => setCompanyAddress(e.target.value)}
+                        rows={2}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="companyContact">Phone Number</Label>
+                      <Input
+                        id="companyContact"
+                        value={companyContact}
+                        onChange={(e) => setCompanyContact(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="companyEmail">Email</Label>
+                      <Input
+                        id="companyEmail"
+                        type="email"
+                        value={companyEmail}
+                        onChange={(e) => setCompanyEmail(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="primaryColor">Primary Color</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="primaryColor"
+                          type="color"
+                          value={primaryColor}
+                          onChange={(e) => setPrimaryColor(e.target.value)}
+                          className="w-16 h-10 p-1"
+                        />
+                        <Input
+                          value={primaryColor}
+                          onChange={(e) => setPrimaryColor(e.target.value)}
+                          placeholder="#000000"
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="companyName">Company Name</Label>
-                  <Input
-                    id="companyName"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="companyAddress">Company Address</Label>
-                  <Textarea
-                    id="companyAddress"
-                    value={companyAddress}
-                    onChange={(e) => setCompanyAddress(e.target.value)}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="companyContact">Phone Number</Label>
-                  <Input
-                    id="companyContact"
-                    value={companyContact}
-                    onChange={(e) => setCompanyContact(e.target.value)}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="companyEmail">Email</Label>
-                  <Input
-                    id="companyEmail"
-                    type="email"
-                    value={companyEmail}
-                    onChange={(e) => setCompanyEmail(e.target.value)}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="primaryColor">Primary Color</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="primaryColor"
-                      type="color"
-                      value={primaryColor}
-                      onChange={(e) => setPrimaryColor(e.target.value)}
-                      className="w-16 h-10 p-1"
-                    />
-                    <Input
-                      value={primaryColor}
-                      onChange={(e) => setPrimaryColor(e.target.value)}
-                      placeholder="#000000"
-                      className="flex-1"
-                    />
-                  </div>
-                </div>
+              </ScrollArea>
+              
+              <div className="mt-6 flex justify-end gap-2">
+                <Button variant="outline" onClick={() => document.querySelector('.cl-sheet-close')?.click()}>Cancel</Button>
+                <Button onClick={() => {
+                  handleSaveSettings();
+                  document.querySelector('.cl-sheet-close')?.click();
+                }}>
+                  Save Changes
+                </Button>
               </div>
-              <div className="flex justify-end gap-2">
-                <DialogClose asChild>
-                  <Button variant="outline">Cancel</Button>
-                </DialogClose>
-                <DialogClose asChild>
-                  <Button onClick={handleSaveSettings}>Save Changes</Button>
-                </DialogClose>
-              </div>
-            </DialogContent>
-          </Dialog>
+            </SheetContent>
+          </Sheet>
         </div>
         
         <Separator className="my-2" />
