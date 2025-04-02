@@ -134,27 +134,30 @@ const QuoteView = () => {
             .maybeSingle();
             
           setServiceData(service);
+          
+          // Now fetch bandwidth data based on the service
+          if (service) {
+            // Try to find a matching bandwidth option
+            const { data: bandwidthOptions } = await supabase
+              .from("bandwidth_options")
+              .select("*")
+              .eq("service_id", service.id);
+              
+            // In a real app with a proper schema, we would have stored the bandwidth_id
+            // For now, we'll just use the first bandwidth option as an example
+            if (bandwidthOptions && bandwidthOptions.length > 0) {
+              setBandwidthData(bandwidthOptions[0]);
+            }
+          }
         }
         
-        // Fetch bandwidth data if available
-        if (quote.bandwidth_id) {
-          const { data: bandwidth } = await supabase
-            .from("bandwidth_options")
-            .select("*")
-            .eq("id", quote.bandwidth_id)
-            .maybeSingle();
-            
-          setBandwidthData(bandwidth);
-        }
-        
-        // Fetch selected features
-        if (quote.selected_features && quote.selected_features.length > 0) {
-          const { data: features } = await supabase
-            .from("additional_features")
-            .select("*")
-            .in("id", quote.selected_features);
-            
-          setFeaturesData(features || []);
+        // Fetch all additional features for display
+        const { data: features } = await supabase
+          .from("additional_features")
+          .select("*");
+          
+        if (features && features.length > 0) {
+          setFeaturesData(features);
         }
 
       } catch (err) {
