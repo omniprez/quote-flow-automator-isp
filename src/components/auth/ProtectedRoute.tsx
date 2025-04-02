@@ -39,10 +39,10 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     );
   }
 
-  // If not authenticated, redirect to login
+  // If user is not authenticated and we're not already on the login page, redirect to login
   if (!user) {
     console.log("User not authenticated, redirecting to /login");
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
   // Check for admin requirement

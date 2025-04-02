@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { FileText } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -16,6 +17,16 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
+  
+  // If the user is already authenticated, redirect to the homepage
+  useEffect(() => {
+    if (user) {
+      console.log("User already authenticated, redirecting to homepage");
+      navigate("/", { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,9 +51,12 @@ const Login = () => {
         });
 
         if (error) throw error;
-        console.log("Login successful, redirecting to dashboard");
+        
+        // Get the redirect path from location state or default to home
+        const from = location.state?.from || "/";
+        console.log("Login successful, redirecting to:", from);
         toast.success("Logged in successfully!");
-        navigate("/", { replace: true });
+        navigate(from, { replace: true });
       }
     } catch (error: any) {
       console.error("Authentication error:", error);
