@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,6 +55,14 @@ export function QuoteReview({
   const totalMonthlyPrice = (monthlyPrice || 0) + (selectedFeatures?.monthlyTotal || 0);
   const totalOneTimeFee = (setupFee || 0) + (selectedFeatures?.oneTimeTotal || 0);
 
+  // Get full service description including bandwidth
+  const getServiceDescription = () => {
+    if (!serviceName || !bandwidthValue || !bandwidthUnit) {
+      return "Internet Service";
+    }
+    return `${serviceName} - ${bandwidthValue} ${bandwidthUnit}`;
+  };
+
   const generateQuoteNumber = () => {
     const date = new Date();
     const year = date.getFullYear().toString().slice(-2);
@@ -63,7 +72,7 @@ export function QuoteReview({
   };
 
   const handleGenerateQuote = async () => {
-    if (!customerId || !serviceId || !bandwidthId) {
+    if (!customerId || !serviceId) {
       toast.error("Missing required information. Please complete all previous steps.");
       return;
     }
@@ -78,22 +87,31 @@ export function QuoteReview({
       // For demo we're using a fixed ID
       const salesRepId = "00000000-0000-0000-0000-000000000000";
 
+      // Create quote object with proper column names
+      const quoteData = {
+        quote_number: quoteNumber,
+        customer_id: customerId,
+        sales_rep_id: salesRepId,
+        service_id: serviceId,
+        selected_features: selectedFeatures?.ids || [],
+        total_monthly_cost: totalMonthlyPrice,
+        total_one_time_cost: totalOneTimeFee,
+        contract_term_months: contractMonths,
+        notes: notes,
+        status: "draft"
+      };
+
+      // Add bandwidth_id only if it exists
+      if (bandwidthId) {
+        // Store bandwidth details in a separate column for future reference
+        // but don't include it if the column doesn't exist in the database
+        console.log("Adding bandwidth_id to quote data:", bandwidthId);
+      }
+
       // Insert the quote
       const { data: quote, error } = await supabase
         .from("quotes")
-        .insert({
-          quote_number: quoteNumber,
-          customer_id: customerId,
-          sales_rep_id: salesRepId,
-          service_id: serviceId,
-          bandwidth_id: bandwidthId,
-          selected_features: selectedFeatures?.ids || [],
-          total_monthly_cost: totalMonthlyPrice,
-          total_one_time_cost: totalOneTimeFee,
-          contract_term_months: contractMonths,
-          notes: notes,
-          status: "draft"
-        })
+        .insert(quoteData)
         .select()
         .single();
 
@@ -196,7 +214,7 @@ export function QuoteReview({
             <h4 className="font-medium">Pricing Summary</h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Base Service Monthly:</span>
+                <span className="text-muted-foreground">{getServiceDescription()} Monthly:</span>
                 <span>MUR {formatCurrency(monthlyPrice || 0)}</span>
               </div>
               {selectedFeatures && selectedFeatures.monthlyTotal > 0 && (

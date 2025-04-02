@@ -41,9 +41,16 @@ export function QuoteDocument({
 
   // Format the service description to include the service name and bandwidth
   const getServiceDescription = () => {
-    if (!serviceData || !bandwidthData) return "Internet Service";
+    if (!serviceData) return "Internet Service";
     
-    return `${serviceData.name} - ${bandwidthData.bandwidth} ${bandwidthData.unit}`;
+    let description = serviceData.name;
+    
+    // Add bandwidth if available
+    if (bandwidthData) {
+      description += ` - ${bandwidthData.bandwidth} ${bandwidthData.unit}`;
+    }
+    
+    return description;
   };
 
   return (
