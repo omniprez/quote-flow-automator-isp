@@ -30,7 +30,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     }
   }, [user, refreshUserRole]);
 
-  // Show loading state if authentication is still being determined
+  // Show loading state while checking authentication
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -39,9 +39,10 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     );
   }
 
-  // If user is not authenticated, redirect to login with the current path in state
+  // If user is not authenticated, redirect to login
   if (!user) {
-    console.log("User not authenticated, redirecting to /login");
+    console.log("User not authenticated, redirecting to /login with from:", location.pathname);
+    // Pass the current location so we can redirect back after login
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 

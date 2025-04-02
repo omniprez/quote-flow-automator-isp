@@ -20,16 +20,23 @@ const Login = () => {
   const location = useLocation();
   const { user } = useAuth();
   
-  // If user is already authenticated, redirect to homepage
+  // Debug the login page render
+  useEffect(() => {
+    console.log("Login page rendered. Auth state:", {
+      isAuthenticated: !!user,
+      currentPath: location.pathname,
+      redirectPath: location.state?.from || "/"
+    });
+  }, [user, location]);
+  
+  // If user is already authenticated, redirect to homepage or the route they came from
   useEffect(() => {
     if (user) {
-      // Only redirect if we're on the login page (prevent loops)
-      if (location.pathname === '/login') {
-        console.log("User already authenticated, redirecting to homepage");
-        navigate("/", { replace: true });
-      }
+      const destination = location.state?.from || "/";
+      console.log("User already authenticated, redirecting to:", destination);
+      navigate(destination, { replace: true });
     }
-  }, [user, navigate, location.pathname]);
+  }, [user, navigate, location.state]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +66,8 @@ const Login = () => {
         const from = location.state?.from || "/";
         console.log("Login successful, redirecting to:", from);
         toast.success("Logged in successfully!");
+        
+        // Use replace to prevent the user from navigating back to the login page
         navigate(from, { replace: true });
       }
     } catch (error: any) {

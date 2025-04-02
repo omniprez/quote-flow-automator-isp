@@ -1,3 +1,4 @@
+
 import { createContext, useState, useEffect, useContext, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
@@ -117,26 +118,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
-      console.log("Signing out...");
+      console.log("Signing out with hard reload approach...");
       
-      // Clear local authentication state first
+      // First clear all auth tokens from browser storage
+      localStorage.removeItem('supabase.auth.token');
+      localStorage.removeItem('supabase.auth.refreshToken');
+      
+      // Clear all state immediately
       setUser(null);
       setSession(null);
       setUserRole('user');
       
-      // Use a synchronous window.location replacement to /login 
-      // This is more reliable than using React Router navigation
-      window.location.replace('/login');
+      // Then force a complete page reload and redirect
+      // This is the most reliable approach as it resets everything
+      window.location.href = '/login';
       
-      // Then sign out with Supabase (but don't wait for completion)
-      // This order ensures the UI responds immediately while auth cleanup happens in background
-      await supabase.auth.signOut().catch(e => {
+      // Also invoke the Supabase signOut for good measure
+      // But don't wait for it to complete since we're already reloading
+      supabase.auth.signOut().catch(e => {
         console.error("Error during sign out:", e);
       });
     } catch (err) {
       console.error("Exception during sign out:", err);
-      // Force navigation even on error - this is the most reliable approach
-      window.location.replace('/login');
+      // Force reload anyway as fallback
+      window.location.href = '/login';
     }
   };
 
