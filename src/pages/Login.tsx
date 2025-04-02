@@ -25,10 +25,8 @@ const Login = () => {
     console.log("Login page rendered, user:", !!user, "path:", location.pathname);
   }, [user, location.pathname]);
 
-  // If user is already logged in, redirect to dashboard
+  // If user is already logged in and we're on the login page, redirect to dashboard
   useEffect(() => {
-    // Only redirect if we have confirmation the user is logged in
-    // AND we're on the login page (to prevent redirect loops)
     if (user && location.pathname === '/login') {
       console.log("User already logged in, redirecting to dashboard");
       navigate("/", { replace: true });
@@ -60,6 +58,7 @@ const Login = () => {
         if (error) throw error;
         console.log("Login successful, redirecting to dashboard");
         toast.success("Logged in successfully!");
+        // Use replace: true to replace current history entry rather than push
         navigate("/", { replace: true });
       }
     } catch (error: any) {

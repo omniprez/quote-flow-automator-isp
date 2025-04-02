@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (!isMounted) return;
         
-        if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        if (event === 'SIGNED_OUT') {
           setSession(null);
           setUser(null);
           setUserRole('user');
@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log("Signing out...");
       
-      // Sign out with Supabase first
+      // Sign out with Supabase
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Error during Supabase sign out:", error);
@@ -124,13 +124,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(null);
       setUserRole('user');
       
-      // Navigate to login page
-      window.location.href = '/login';
+      // Use window.location.replace for more forceful navigation that won't be
+      // intercepted by React Router
+      window.location.replace('/login');
       
     } catch (err) {
       console.error("Exception during sign out:", err);
       // Force redirect to login even on error
-      window.location.href = '/login';
+      window.location.replace('/login');
     }
   };
 
