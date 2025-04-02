@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Download, Send, Printer, Settings, Upload } from "lucide-react";
+import { ArrowLeft, Download, Send, Printer, Settings, Upload, Code, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { QuoteDocument } from "@/components/quote/QuoteDocument";
+import { HtmlTemplateEditor } from "@/components/quote/HtmlTemplateEditor";
 import { generatePdf } from "@/lib/pdf-generator";
 import { 
   Dialog,
@@ -51,6 +52,8 @@ const QuoteView = () => {
   const [featuresData, setFeaturesData] = useState<any[]>([]);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isHtmlTemplateDialogOpen, setIsHtmlTemplateDialogOpen] = useState(false);
+  const [activeHtmlTemplate, setActiveHtmlTemplate] = useState<string | undefined>(undefined);
   const { user } = useAuth();
   
   // Create refs for the sheet close button
@@ -322,7 +325,13 @@ const QuoteView = () => {
     toast.success(`Template "${deletedName}" deleted`);
   };
 
-  // Function to handle docx file upload
+  // Function to handle HTML template selection
+  const handleApplyHtmlTemplate = (html: string) => {
+    setActiveHtmlTemplate(html);
+    setIsHtmlTemplateDialogOpen(false);
+  };
+
+  // Function to handle template file upload
   const handleTemplateFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -447,7 +456,28 @@ const QuoteView = () => {
             Print Quote
           </Button>
           
-          {/* Sheet for company branding with improved layout */}
+          {/* HTML Template Editor Dialog */}
+          <Dialog open={isHtmlTemplateDialogOpen} onOpenChange={setIsHtmlTemplateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex-1">
+                <Code className="mr-2 h-4 w-4" />
+                HTML Template
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl h-[90vh]">
+              <DialogHeader>
+                <DialogTitle>HTML Template Editor</DialogTitle>
+                <DialogDescription>
+                  Create and manage HTML templates for your quotes
+                </DialogDescription>
+              </DialogHeader>
+              <div className="pt-4">
+                <HtmlTemplateEditor onApplyTemplate={handleApplyHtmlTemplate} />
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          {/* Branding Sheet */}
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="outline" className="flex-1">
@@ -638,6 +668,7 @@ const QuoteView = () => {
             companyContact={companyContact}
             companyEmail={companyEmail}
             primaryColor={primaryColor}
+            htmlTemplate={activeHtmlTemplate}
           />
         </div>
       </div>

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -140,7 +139,8 @@ export function QuoteReview({
           features: selectedFeatures ? selectedFeatures.ids.map((id, index) => ({
             id,
             name: selectedFeatures.names[index]
-          })) : []
+          })) : [],
+          html_template: null // Placeholder for HTML template, will be set when viewing the quote
         };
         
         // Prepend the metadata as a JSON comment at the beginning of the notes
@@ -171,19 +171,6 @@ export function QuoteReview({
         // For each feature, create a record in a quote_features table (if it exists)
         // Note: Since we don't have a quote_features table in our schema yet, we'll just log this
         // In a real app, we would create this table and store the relationships
-        
-        // Here's how it would look if we had a quote_features table:
-        // const { error: featuresError } = await supabase
-        //   .from("quote_features")
-        //   .insert(selectedFeatures.ids.map(featureId => ({
-        //     quote_id: quote.id,
-        //     feature_id: featureId
-        //   })));
-        // 
-        // if (featuresError) {
-        //   console.error("Error storing features:", featuresError);
-        //   // We'll continue even if this fails, since the quote is created
-        // }
       }
 
       toast.success("Quote generated successfully!");
@@ -324,6 +311,9 @@ export function QuoteReview({
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
             />
+            <p className="text-xs text-muted-foreground">
+              After generating the quote, you'll be able to customize its appearance with HTML templates.
+            </p>
           </div>
 
           {/* Actions */}
