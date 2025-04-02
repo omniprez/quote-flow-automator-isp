@@ -7,21 +7,12 @@ import { motion } from "framer-motion";
 import { useEffect } from "react";
 
 const Index = () => {
-  const { userRole, signOut, refreshUserRole, user } = useAuth();
+  const { userRole, signOut, refreshUserRole } = useAuth();
   
   // Force refresh role on mount to ensure we have the latest role
   useEffect(() => {
-    console.log("Index page mounted, current role:", userRole);
-    refreshUserRole().then(() => {
-      console.log("Role refreshed, now:", userRole);
-    });
+    refreshUserRole();
   }, [refreshUserRole]);
-  
-  // Add another effect to log when userRole changes
-  useEffect(() => {
-    console.log("userRole changed to:", userRole);
-    console.log("Current user ID:", user?.id);
-  }, [userRole, user]);
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-50 to-blue-100">
@@ -59,7 +50,15 @@ const Index = () => {
             </Link>
           </Button>
           
-          <Button onClick={signOut} variant="outline" size="lg" className="w-full border-indigo-300 text-indigo-700 hover:bg-indigo-100 transition-all duration-300">
+          <Button 
+            onClick={(e) => {
+              e.preventDefault();
+              signOut();
+            }} 
+            variant="outline" 
+            size="lg" 
+            className="w-full border-indigo-300 text-indigo-700 hover:bg-indigo-100 transition-all duration-300"
+          >
             <LogOut className="mr-2 h-5 w-5" />
             Logout
           </Button>
@@ -68,19 +67,6 @@ const Index = () => {
         <p className="text-sm text-indigo-500 mt-8">
           All prices are in Mauritian Rupees (MUR) and exclusive of VAT.
         </p>
-        
-        {/* Debug info - remove this in production */}
-        <div className="mt-4 p-4 bg-gray-100 rounded text-left text-xs">
-          <p>Debug info:</p>
-          <p>Role: {userRole}</p>
-          <p>User ID: {user?.id || 'Not logged in'}</p>
-          <button 
-            onClick={() => refreshUserRole()} 
-            className="mt-2 bg-blue-500 text-white px-2 py-1 rounded text-xs"
-          >
-            Force Refresh Role
-          </button>
-        </div>
       </div>
     </div>
   );

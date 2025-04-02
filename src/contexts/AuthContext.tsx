@@ -24,7 +24,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserRole = async (userId: string) => {
     try {
-      console.log("Fetching role for user:", userId);
       // Check if user is an admin
       const { data, error } = await supabase
         .from('admin_users')
@@ -38,10 +37,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       if (data && data.length > 0) {
-        console.log("User is admin! Admin data:", data);
         setUserRole('admin');
       } else {
-        console.log("User is not admin. Data returned:", data);
         setUserRole('user');
       }
     } catch (error) {
@@ -52,19 +49,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUserRole = async () => {
     if (user?.id) {
-      console.log("Refreshing user role for user ID:", user.id);
       await fetchUserRole(user.id);
-    } else {
-      console.log("Cannot refresh role - no user ID available");
     }
   };
 
   useEffect(() => {
-    console.log("Setting up auth state listener...");
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log("Auth state changed. Event:", event);
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -83,7 +75,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Got initial session:", session ? "logged in" : "no session");
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -99,7 +90,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error signing out:", error);
+      } else {
+        // Force navigate to login page after signout
+        window.location.href = '/login';
+      }
+    } catch (err) {
+      console.error("Exception during sign out:", err);
+    }
   };
 
   return (
