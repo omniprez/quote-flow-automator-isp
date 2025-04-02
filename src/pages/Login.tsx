@@ -20,20 +20,25 @@ const Login = () => {
   const location = useLocation();
   const { user } = useAuth();
   
-  // Debug the login page render
+  // Debug output to see auth state and redirection paths
   useEffect(() => {
-    console.log("Login page rendered. Auth state:", {
+    console.log("Login page FIXED render:", {
       isAuthenticated: !!user,
       currentPath: location.pathname,
-      redirectPath: location.state?.from || "/"
+      redirectTarget: location.state?.from || "/",
+      search: location.search,
+      hash: location.hash
     });
   }, [user, location]);
   
-  // If user is already authenticated, redirect to homepage or the route they came from
+  // Redirect authenticated users
   useEffect(() => {
     if (user) {
+      // Get redirect destination from location state or default to home
       const destination = location.state?.from || "/";
-      console.log("User already authenticated, redirecting to:", destination);
+      console.log("User authenticated, redirecting to:", destination);
+      
+      // Use replace to prevent back-button issues
       navigate(destination, { replace: true });
     }
   }, [user, navigate, location.state]);
@@ -44,7 +49,7 @@ const Login = () => {
 
     try {
       if (isSignUp) {
-        // Sign up
+        // Sign up logic
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -53,7 +58,7 @@ const Login = () => {
         if (error) throw error;
         toast.success("Account created! Please check your email to confirm your registration.");
       } else {
-        // Sign in
+        // Sign in logic
         console.log("Attempting to sign in with:", email);
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
@@ -67,7 +72,7 @@ const Login = () => {
         console.log("Login successful, redirecting to:", from);
         toast.success("Logged in successfully!");
         
-        // Use replace to prevent the user from navigating back to the login page
+        // Use replace to prevent back navigation to login page
         navigate(from, { replace: true });
       }
     } catch (error: any) {

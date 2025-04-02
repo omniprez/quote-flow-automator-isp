@@ -118,30 +118,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
-      console.log("Signing out with hard reload approach...");
+      console.log("FIXED SIGNOUT: Using direct navigation approach");
       
-      // First clear all auth tokens from browser storage
-      localStorage.removeItem('supabase.auth.token');
-      localStorage.removeItem('supabase.auth.refreshToken');
+      // Clear auth tokens from Supabase first
+      await supabase.auth.signOut();
       
-      // Clear all state immediately
+      // Clear React state
       setUser(null);
       setSession(null);
       setUserRole('user');
       
-      // Then force a complete page reload and redirect
-      // This is the most reliable approach as it resets everything
-      window.location.href = '/login';
+      // Clear any local storage items related to auth
+      localStorage.removeItem('supabase.auth.token');
+      localStorage.removeItem('supabase.auth.refreshToken');
       
-      // Also invoke the Supabase signOut for good measure
-      // But don't wait for it to complete since we're already reloading
-      supabase.auth.signOut().catch(e => {
-        console.error("Error during sign out:", e);
-      });
-    } catch (err) {
-      console.error("Exception during sign out:", err);
-      // Force reload anyway as fallback
-      window.location.href = '/login';
+      // Force a full page reload and redirect to login
+      // This bypasses any React Router cached routes
+      document.location.href = '/login';
+    } catch (error) {
+      console.error("Exception during sign out:", error);
+      // Force navigation even on error
+      document.location.href = '/login';
     }
   };
 

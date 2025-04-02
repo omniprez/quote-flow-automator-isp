@@ -15,7 +15,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
 
   // Debug output
   useEffect(() => {
-    console.log("ProtectedRoute rendered:", {
+    console.log("ProtectedRoute FIXED render:", {
       isLoading,
       hasUser: !!user,
       userRole,
@@ -39,10 +39,9 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     );
   }
 
-  // If user is not authenticated, redirect to login
+  // If not authenticated, redirect to login with current path for later redirect
   if (!user) {
-    console.log("User not authenticated, redirecting to /login with from:", location.pathname);
-    // Pass the current location so we can redirect back after login
+    console.log("FIXED: User not authenticated, redirecting to /login with path:", location.pathname);
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
