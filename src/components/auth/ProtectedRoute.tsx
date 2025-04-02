@@ -1,6 +1,6 @@
 
-import { ReactNode, useEffect } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { ReactNode, useEffect, useState } from "react";
+import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
@@ -12,6 +12,18 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
   const { user, isLoading, userRole, refreshUserRole } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [hasAttemptedRedirect, setHasAttemptedRedirect] = useState(false);
+
+  // Debug output
+  useEffect(() => {
+    console.log("ProtectedRoute rendered:", {
+      isLoading,
+      hasUser: !!user,
+      userRole,
+      currentPath: location.pathname
+    });
+  }, [isLoading, user, userRole, location.pathname]);
 
   // Force a refresh of the user role on mount
   useEffect(() => {
@@ -22,10 +34,12 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
 
   // Effect to handle authentication redirects
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && !user && !hasAttemptedRedirect) {
+      console.log("No user detected, redirecting to login");
+      setHasAttemptedRedirect(true);
       navigate('/login', { replace: true });
     }
-  }, [isLoading, user, navigate]);
+  }, [isLoading, user, navigate, hasAttemptedRedirect]);
 
   if (isLoading) {
     return (
@@ -36,6 +50,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   }
 
   if (!user) {
+    console.log("User not authenticated, redirecting to /login");
     return <Navigate to="/login" replace />;
   }
 

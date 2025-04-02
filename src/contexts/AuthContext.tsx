@@ -54,27 +54,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // Track if component is mounted to prevent state updates after unmount
+    let isMounted = true;
+    
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+      async (event, newSession) => {
+        console.log("Auth state change event:", event, "Has session:", !!newSession);
         
-        // If user logged in, fetch their role
-        if (session?.user) {
-          setTimeout(() => {
-            fetchUserRole(session.user.id);
-          }, 0);
-        } else {
+        if (!isMounted) return;
+        
+        if (event === 'SIGNED_OUT') {
+          setSession(null);
+          setUser(null);
           setUserRole('user');
+          setIsLoading(false);
+        } else {
+          setSession(newSession);
+          setUser(newSession?.user ?? null);
+          
+          // If user logged in, fetch their role
+          if (newSession?.user) {
+            setTimeout(() => {
+              if (isMounted) fetchUserRole(newSession.user.id);
+            }, 0);
+          }
+          
+          setIsLoading(false);
         }
-        
-        setIsLoading(false);
       }
     );
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
+      
+      console.log("Initial session check:", !!session);
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -86,29 +101,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
     try {
+      console.log("Signing out...");
+      
       // Clear local state first
       setUser(null);
       setSession(null);
       setUserRole('user');
       
       // Sign out with Supabase
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error during Supabase sign out:", error);
+      } else {
+        console.log("Supabase sign out successful");
+      }
       
-      // Attempt direct navigation first
+      // Force navigation to login
       window.location.href = '/login';
       
-      // Set a fallback to ensure redirection
+      // Add a failsafe redirect after a short delay
       setTimeout(() => {
+        // Check if we're still not on the login page
         if (window.location.pathname !== '/login') {
-          console.log("Fallback redirect triggered");
+          console.log("Failsafe redirect triggered");
           window.location.replace('/login');
         }
-      }, 300);
+      }, 500);
     } catch (err) {
       console.error("Exception during sign out:", err);
       // Force redirect to login even on error

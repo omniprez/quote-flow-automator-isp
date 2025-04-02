@@ -20,9 +20,15 @@ const Login = () => {
   const location = useLocation();
   const { user } = useAuth();
 
+  // Debug output
+  useEffect(() => {
+    console.log("Login page rendered, user:", !!user, "path:", location.pathname);
+  }, [user, location.pathname]);
+
   // If user is already logged in, redirect to dashboard
   useEffect(() => {
     if (user) {
+      console.log("User already logged in, redirecting to dashboard");
       navigate("/");
     }
   }, [user, navigate]);
@@ -43,12 +49,14 @@ const Login = () => {
         toast.success("Account created! Please check your email to confirm your registration.");
       } else {
         // Sign in
+        console.log("Attempting to sign in with:", email);
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) throw error;
+        console.log("Login successful, redirecting to dashboard");
         toast.success("Logged in successfully!");
         navigate("/");
       }
