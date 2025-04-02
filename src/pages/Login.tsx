@@ -1,6 +1,6 @@
 
-import { useState, useEffect } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { FileText } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 
 const Login = () => {
@@ -17,21 +16,9 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-  const { user } = useAuth();
-
-  // Debug output
-  useEffect(() => {
-    console.log("Login page rendered, user:", !!user, "path:", location.pathname);
-  }, [user, location.pathname]);
-
-  // If user is already logged in and we're on the login page, redirect to dashboard
-  useEffect(() => {
-    if (user && location.pathname === '/login') {
-      console.log("User already logged in, redirecting to dashboard");
-      navigate("/", { replace: true });
-    }
-  }, [user, navigate, location.pathname]);
+  
+  // We've removed the user check and the useEffect with redirect logic
+  // This ensures the login page always renders
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +45,6 @@ const Login = () => {
         if (error) throw error;
         console.log("Login successful, redirecting to dashboard");
         toast.success("Logged in successfully!");
-        // Use replace: true to replace current history entry rather than push
         navigate("/", { replace: true });
       }
     } catch (error: any) {

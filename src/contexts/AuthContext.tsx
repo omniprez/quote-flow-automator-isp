@@ -1,4 +1,3 @@
-
 import { createContext, useState, useEffect, useContext, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
@@ -120,25 +119,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log("Signing out...");
       
-      // Clear local state first to prevent flash of protected content
+      // First, clear all local state
       setUser(null);
       setSession(null);
       setUserRole('user');
       
-      // Sign out with Supabase
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Error during Supabase sign out:", error);
-      } else {
-        console.log("Supabase sign out successful");
-      }
+      // Then sign out with Supabase
+      await supabase.auth.signOut();
       
-      // Hard redirect to login page to ensure complete refresh
+      // Use direct location change to force a full page reload and avoid any React Router issues
       window.location.href = '/login';
       
     } catch (err) {
       console.error("Exception during sign out:", err);
-      // Force redirect to login even on error
+      // Even on error, redirect to login page
       window.location.href = '/login';
     }
   };
