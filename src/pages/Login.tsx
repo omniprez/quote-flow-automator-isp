@@ -16,9 +16,6 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
-  
-  // We've removed the user check and the useEffect with redirect logic
-  // This ensures the login page always renders
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
