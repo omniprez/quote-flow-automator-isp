@@ -72,14 +72,16 @@ export function QuoteReview({
   };
 
   const handleGenerateQuote = async () => {
-    if (!customerId || !serviceId) {
-      toast.error("Missing required information. Please complete all previous steps.");
+    if (!customerId) {
+      toast.error("Missing customer information. Please complete the customer step.");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
+      console.log("Starting quote generation...");
+      
       // Generate a unique quote number
       const quoteNumber = generateQuoteNumber();
       
@@ -87,20 +89,44 @@ export function QuoteReview({
       // For demo we're using a fixed ID
       const salesRepId = "00000000-0000-0000-0000-000000000000";
 
-      // Create basic quote object with only the columns that exist in the database
-      const quoteData = {
+      // First, get the columns of the quotes table to ensure we only insert valid columns
+      const { data: columnsData, error: columnsError } = await supabase
+        .from('quotes')
+        .select('*')
+        .limit(1);
+        
+      if (columnsError) {
+        console.error("Error checking quotes table structure:", columnsError);
+        throw new Error("Could not verify database structure");
+      }
+      
+      // Get the column names from the returned data or fall back to a safe subset
+      const validColumns = columnsData ? 
+        Object.keys(columnsData[0] || {}) : 
+        ['id', 'quote_number', 'customer_id', 'sales_rep_id', 'total_monthly_cost', 'total_one_time_cost', 'contract_term_months', 'notes', 'status', 'quote_date', 'created_at', 'updated_at'];
+      
+      console.log("Valid columns in quotes table:", validColumns);
+      
+      // Create quote data object with only valid columns
+      const quoteData: Record<string, any> = {
         quote_number: quoteNumber,
         customer_id: customerId,
         sales_rep_id: salesRepId,
-        service_id: serviceId,
         total_monthly_cost: totalMonthlyPrice,
         total_one_time_cost: totalOneTimeFee,
         contract_term_months: contractMonths,
         notes: notes,
         status: "draft"
       };
+      
+      // Only add service_id if it's a valid column in the database
+      if (validColumns.includes('service_id') && serviceId) {
+        quoteData.service_id = serviceId;
+      }
 
-      // Insert the quote without the selected_features column that caused the error
+      console.log("Inserting quote with data:", quoteData);
+
+      // Insert the quote with only valid columns
       const { data: quote, error } = await supabase
         .from("quotes")
         .insert(quoteData)
@@ -108,12 +134,14 @@ export function QuoteReview({
         .single();
 
       if (error) {
+        console.error("Error details:", error);
         throw error;
       }
 
+      console.log("Quote created successfully:", quote);
+
       // If we have features, we should store them in a separate way
       // In a real app, we might create a quote_features junction table
-      // For now, we'll just log them for future implementation
       if (selectedFeatures && selectedFeatures.ids.length > 0) {
         console.log("Selected features to be stored separately:", selectedFeatures.ids);
         // Future implementation: create records in a quote_features table
@@ -133,7 +161,7 @@ export function QuoteReview({
       }, 1500);
     } catch (error) {
       console.error("Error generating quote:", error);
-      toast.error("Failed to generate quote");
+      toast.error("Failed to generate quote. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
