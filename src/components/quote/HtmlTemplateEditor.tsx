@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,21 +7,96 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { getTemplateOptions, COVER_PAGE_IMAGE_TEMPLATE } from "./QuoteTemplates";
 
-// Default HTML template with placeholders
+// Default HTML template with cover page
 const DEFAULT_HTML_TEMPLATE = `
 <!DOCTYPE html>
 <html>
 <head>
   <style>
-    body { font-family: Arial, sans-serif; color: #333; }
-    .quote-container { max-width: 800px; margin: 0 auto; padding: 20px; }
-    .header { display: flex; justify-content: space-between; margin-bottom: 30px; }
+    body { font-family: Arial, sans-serif; color: #333; margin: 0; padding: 0; }
+    .quote-container { max-width: 800px; margin: 0 auto; }
+    
+    /* Cover Page Styles */
+    .cover-page {
+      position: relative;
+      height: 1056px;
+      width: 100%;
+      background-color: #0e3866;
+      color: white;
+      overflow: hidden;
+      page-break-after: always;
+    }
+    .cover-diagonal {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 50%;
+      height: 100%;
+      background-color: white;
+      transform: skewX(-20deg) translateX(25%);
+      z-index: 1;
+    }
+    .cover-dots {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 50%;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.2) 1px, transparent 1px);
+      background-size: 15px 15px;
+      z-index: 0;
+    }
+    .cover-logo {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+      z-index: 2;
+      color: #0e3866;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .cover-title {
+      position: absolute;
+      top: 150px;
+      left: 50px;
+      z-index: 2;
+      font-size: 16px;
+    }
+    .cover-quotation {
+      position: absolute;
+      top: 220px;
+      left: 50px;
+      z-index: 2;
+      font-size: 48px;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+    .cover-footer {
+      position: absolute;
+      bottom: 100px;
+      left: 50px;
+      z-index: 2;
+      width: 300px;
+    }
+    .cover-footer .label {
+      font-size: 12px;
+      margin-bottom: 5px;
+      color: rgba(255,255,255,0.7);
+    }
+    .cover-footer .value {
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+    
+    /* Rest of the styles */
+    .header { display: flex; justify-content: space-between; margin-bottom: 30px; padding: 20px; }
     .logo { max-height: 60px; }
     .quote-title { color: {{primaryColor}}; font-size: 24px; font-weight: bold; }
     .company-info { text-align: right; }
     .separator { height: 2px; background-color: {{primaryColor}}; opacity: 0.2; margin: 20px 0; }
-    .section { margin-bottom: 20px; }
+    .section { margin-bottom: 20px; padding: 0 20px; }
     .section-title { color: {{primaryColor}}; font-weight: bold; margin-bottom: 10px; }
     .two-columns { display: flex; justify-content: space-between; flex-wrap: wrap; }
     .column { flex: 0 0 48%; }
@@ -31,10 +105,37 @@ const DEFAULT_HTML_TEMPLATE = `
     table td { padding: 10px; border-bottom: 1px solid #eee; }
     .text-right { text-align: right; }
     .footer { margin-top: 30px; text-align: center; color: #666; font-size: 14px; border-top: 1px solid #eee; padding-top: 20px; }
+    
+    @media print {
+      .page-break { page-break-after: always; }
+    }
   </style>
 </head>
 <body>
   <div class="quote-container">
+    <!-- Cover Page -->
+    <div class="cover-page">
+      <div class="cover-diagonal"></div>
+      <div class="cover-dots"></div>
+      <div class="cover-logo">{{companyName}} - Technology</div>
+      <div class="cover-title">{{companyName}} - Technology</div>
+      <div class="cover-quotation">QUOTATION</div>
+      
+      <div class="cover-footer">
+        <div class="label">To:</div>
+        <div class="value">{{customerName}}<br>{{contactName}}<br>{{customerAddress}}<br>{{customerCity}}, {{customerCountry}}</div>
+        
+        <div class="label">From:</div>
+        <div class="value">{{companyName}}<br>{{companyAddress}}<br>Tel: {{companyContact}}<br>Email: {{companyEmail}}</div>
+        
+        <div class="label">Quote Reference Number:</div>
+        <div class="value">{{quoteNumber}}</div>
+      </div>
+    </div>
+    
+    <div class="page-break"></div>
+    
+    <!-- Quote Content Page -->
     <!-- Header -->
     <div class="header">
       <div>
@@ -158,13 +259,30 @@ export function HtmlTemplateEditor({ onApplyTemplate }: HtmlTemplateEditorProps)
     const savedTemplates = localStorage.getItem('htmlQuoteTemplates');
     if (savedTemplates) {
       try {
-        setHtmlTemplates(JSON.parse(savedTemplates));
+        let templates = JSON.parse(savedTemplates);
+        
+        // Add the image template if it doesn't exist
+        const imageTemplateExists = templates.some((t: any) => 
+          t.name === "Blue Cover Page with Uploaded Image"
+        );
+        
+        if (!imageTemplateExists) {
+          templates = [
+            ...templates, 
+            { name: "Blue Cover Page with Uploaded Image", html: COVER_PAGE_IMAGE_TEMPLATE }
+          ];
+        }
+        
+        setHtmlTemplates(templates);
       } catch (error) {
         console.error("Error loading HTML templates:", error);
       }
     } else {
-      // If no templates exist yet, save the default one
-      const defaultTemplates = [{ name: "Default Template", html: DEFAULT_HTML_TEMPLATE }];
+      // If no templates exist yet, save the default ones
+      const defaultTemplates = [
+        { name: "Default Template", html: DEFAULT_HTML_TEMPLATE },
+        { name: "Blue Cover Page with Uploaded Image", html: COVER_PAGE_IMAGE_TEMPLATE }
+      ];
       localStorage.setItem('htmlQuoteTemplates', JSON.stringify(defaultTemplates));
       setHtmlTemplates(defaultTemplates);
     }
@@ -229,6 +347,14 @@ export function HtmlTemplateEditor({ onApplyTemplate }: HtmlTemplateEditorProps)
     setTemplateName("");
     toast.info("Reset to default template");
   };
+
+  // Apply the image template
+  const handleApplyImageTemplate = () => {
+    setCurrentTemplate(COVER_PAGE_IMAGE_TEMPLATE);
+    setTemplateName("Blue Cover Page with Uploaded Image");
+    toast.info("Cover page template loaded");
+    setActiveTab("edit");
+  };
   
   return (
     <Card className="w-full">
@@ -244,6 +370,7 @@ export function HtmlTemplateEditor({ onApplyTemplate }: HtmlTemplateEditorProps)
             <TabsTrigger value="edit">Edit Template</TabsTrigger>
             <TabsTrigger value="manage">Manage Templates</TabsTrigger>
             <TabsTrigger value="help">Placeholders Help</TabsTrigger>
+            <TabsTrigger value="examples">Example Templates</TabsTrigger>
           </TabsList>
           
           <TabsContent value="edit" className="space-y-4">
@@ -391,10 +518,40 @@ export function HtmlTemplateEditor({ onApplyTemplate }: HtmlTemplateEditorProps)
                         <li><code>&#123;&#123;companyContact&#125;&#125;</code> - Contact number</li>
                         <li><code>&#123;&#123;companyEmail&#125;&#125;</code> - Company email</li>
                         <li><code>&#123;&#123;primaryColor&#125;&#125;</code> - Primary brand color</li>
+                        <li><code>&#123;&#123;coverPageImage&#125;&#125;</code> - Cover page image URL</li>
                       </ul>
                     </CardContent>
                   </Card>
                 </div>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="examples">
+            <div className="space-y-4">
+              <h3 className="font-medium mb-4">Example Templates</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="overflow-hidden">
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-base">Blue Cover Page Template</CardTitle>
+                    <CardDescription>
+                      Template with a blue cover page using the uploaded image
+                    </CardDescription>
+                  </CardHeader>
+                  <div className="h-40 overflow-hidden border-t border-b">
+                    <img 
+                      src="/lovable-uploads/742007c0-8ba0-46f4-99ae-0d31b98214a3.png"
+                      alt="Blue Cover Template Preview"
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                  <CardFooter className="pt-4">
+                    <Button className="w-full" onClick={handleApplyImageTemplate}>
+                      Use This Template
+                    </Button>
+                  </CardFooter>
+                </Card>
               </div>
             </div>
           </TabsContent>

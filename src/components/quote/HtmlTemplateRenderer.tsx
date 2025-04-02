@@ -74,7 +74,10 @@ export function HtmlTemplateRenderer({
       processedTemplate = processedTemplate.replace(/{{companyAddress}}/g, companyAddress.replace(/\n/g, "<br>") || "");
       processedTemplate = processedTemplate.replace(/{{companyContact}}/g, companyContact || "");
       processedTemplate = processedTemplate.replace(/{{companyEmail}}/g, companyEmail || "");
-      processedTemplate = processedTemplate.replace(/{{primaryColor}}/g, primaryColor || "");
+      processedTemplate = processedTemplate.replace(/{{primaryColor}}/g, primaryColor || "#0e3866"); // Default to blue if no color
+      
+      // Cover page image
+      processedTemplate = processedTemplate.replace(/{{coverPageImage}}/g, "/lovable-uploads/742007c0-8ba0-46f4-99ae-0d31b98214a3.png");
       
       // Features information
       let featuresHtml = "";
