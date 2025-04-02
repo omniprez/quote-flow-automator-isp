@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +23,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const QuoteView = () => {
   const { quoteId } = useParams();
@@ -33,6 +41,7 @@ const QuoteView = () => {
   const [bandwidthData, setBandwidthData] = useState<any>(null);
   const [featuresData, setFeaturesData] = useState<any[]>([]);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const { user } = useAuth();
   
   // Company branding states
@@ -42,6 +51,10 @@ const QuoteView = () => {
   const [companyContact, setCompanyContact] = useState<string>("+230 123 4567");
   const [companyEmail, setCompanyEmail] = useState<string>("sales@mcs.mu");
   const [primaryColor, setPrimaryColor] = useState<string>("#3b82f6");
+
+  // Templates state
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
   // Load company settings from localStorage on mount
   useEffect(() => {
@@ -59,7 +72,25 @@ const QuoteView = () => {
         console.error("Error parsing company settings:", e);
       }
     }
+    
+    // Load available templates
+    fetchTemplates();
   }, []);
+
+  const fetchTemplates = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('templates')
+        .select('*')
+        .eq('type', 'quote')
+        .eq('is_active', true);
+        
+      if (error) throw error;
+      setTemplates(data || []);
+    } catch (error) {
+      console.error("Error fetching templates:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchQuoteData = async () => {
@@ -94,11 +125,7 @@ const QuoteView = () => {
         if (customerError) throw customerError;
         setCustomerData(customer);
         
-        // Fetch service and bandwidth data
-        // In a real implementation, this would be stored in the quote record
-        // This is a simplified implementation to fetch related data
-        
-        // Assuming we have a record of the selected service in the quote
+        // Fetch service data if available in the quote
         if (quote.service_id) {
           const { data: service } = await supabase
             .from("services")
@@ -189,6 +216,61 @@ const QuoteView = () => {
   const handlePrint = () => {
     window.print();
   };
+  
+  const handleUpdateStatus = async (newStatus: string) => {
+    if (!quoteId || !quoteData) return;
+    
+    setIsUpdatingStatus(true);
+    
+    try {
+      const { error } = await supabase
+        .from("quotes")
+        .update({ status: newStatus })
+        .eq("id", quoteId);
+        
+      if (error) throw error;
+      
+      setQuoteData({
+        ...quoteData,
+        status: newStatus
+      });
+      
+      toast.success(`Quote status updated to ${newStatus}`);
+    } catch (error) {
+      console.error("Error updating quote status:", error);
+      toast.error("Failed to update quote status");
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
+  const handleApplyTemplate = (templateId: string) => {
+    const template = templates.find(t => t.id === templateId);
+    if (!template) return;
+    
+    try {
+      // Apply template settings to the current quote
+      if (template.content) {
+        const content = template.content;
+        
+        // Update company branding settings
+        if (content.companyLogo) setCompanyLogo(content.companyLogo);
+        if (content.companyName) setCompanyName(content.companyName);
+        if (content.companyAddress) setCompanyAddress(content.companyAddress);
+        if (content.companyContact) setCompanyContact(content.companyContact);
+        if (content.companyEmail) setCompanyEmail(content.companyEmail);
+        if (content.primaryColor) setPrimaryColor(content.primaryColor);
+        
+        // Save these settings to localStorage
+        handleSaveSettings();
+      }
+      
+      toast.success(`Template "${template.name}" applied successfully`);
+    } catch (error) {
+      console.error("Error applying template:", error);
+      toast.error("Failed to apply template");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -240,7 +322,24 @@ const QuoteView = () => {
             </p>
           </div>
           
-          <div className="flex flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <Select
+              value={quoteData?.status}
+              onValueChange={handleUpdateStatus}
+              disabled={isUpdatingStatus}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="sent">Sent</SelectItem>
+                <SelectItem value="accepted">Accepted</SelectItem>
+                <SelectItem value="declined">Declined</SelectItem>
+                <SelectItem value="expired">Expired</SelectItem>
+              </SelectContent>
+            </Select>
+            
             <Badge variant="outline" className="capitalize">
               {quoteData?.status || "draft"}
             </Badge>
@@ -279,6 +378,31 @@ const QuoteView = () => {
                   Customize your quote with your company branding
                 </DialogDescription>
               </DialogHeader>
+              
+              {templates.length > 0 && (
+                <div className="grid gap-2 pt-4 border-t">
+                  <Label htmlFor="template">Use Template</Label>
+                  <Select
+                    value={selectedTemplate || ""}
+                    onValueChange={(value) => {
+                      setSelectedTemplate(value);
+                      handleApplyTemplate(value);
+                    }}
+                  >
+                    <SelectTrigger id="template">
+                      <SelectValue placeholder="Select a template..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {templates.map((template) => (
+                        <SelectItem key={template.id} value={template.id}>
+                          {template.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="logo">Company Logo</Label>

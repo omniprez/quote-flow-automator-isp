@@ -85,6 +85,9 @@ export function QuoteReview({
           quote_number: quoteNumber,
           customer_id: customerId,
           sales_rep_id: salesRepId,
+          service_id: serviceId,
+          bandwidth_id: bandwidthId,
+          selected_features: selectedFeatures?.ids || [],
           total_monthly_cost: totalMonthlyPrice,
           total_one_time_cost: totalOneTimeFee,
           contract_term_months: contractMonths,
@@ -98,9 +101,6 @@ export function QuoteReview({
         throw error;
       }
 
-      // Save quote details and features in another table if needed
-      // This would typically be done in a real application
-      
       toast.success("Quote generated successfully!");
       setQuoteGenerated(true);
       setQuoteId(quote.id);

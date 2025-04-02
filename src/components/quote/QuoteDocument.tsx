@@ -39,6 +39,13 @@ export function QuoteDocument({
     color: primaryColor
   };
 
+  // Format the service description to include the service name and bandwidth
+  const getServiceDescription = () => {
+    if (!serviceData || !bandwidthData) return "Internet Service";
+    
+    return `${serviceData.name} - ${bandwidthData.bandwidth} ${bandwidthData.unit}`;
+  };
+
   return (
     <div className="p-8 max-w-4xl mx-auto bg-white">
       {/* Header */}
@@ -129,7 +136,7 @@ export function QuoteDocument({
           </thead>
           <tbody>
             <tr className="border-b">
-              <td className="py-3 px-4">Base Service</td>
+              <td className="py-3 px-4">{getServiceDescription()}</td>
               <td className="py-3 px-4 text-right">
                 MUR {formatCurrency(serviceData?.setup_fee || 0)}
               </td>
