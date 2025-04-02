@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Download, Send, Printer, Settings } from "lucide-react";
+import { ArrowLeft, Download, Send, Printer, Settings, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -64,10 +64,10 @@ const QuoteView = () => {
   const [companyEmail, setCompanyEmail] = useState<string>("sales@mcs.mu");
   const [primaryColor, setPrimaryColor] = useState<string>("#3b82f6");
 
-  // Templates state
-  const [templates, setTemplates] = useState<any[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-
+  // Template states
+  const [templateName, setTemplateName] = useState<string>("");
+  const [savedTemplates, setSavedTemplates] = useState<{ name: string, settings: any }[]>([]);
+  
   // Load company settings from localStorage on mount
   useEffect(() => {
     const savedSettings = localStorage.getItem('companySettings');
@@ -85,24 +85,17 @@ const QuoteView = () => {
       }
     }
     
-    // Load available templates
-    fetchTemplates();
-  }, []);
-
-  const fetchTemplates = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('templates')
-        .select('*')
-        .eq('type', 'quote')
-        .eq('is_active', true);
-        
-      if (error) throw error;
-      setTemplates(data || []);
-    } catch (error) {
-      console.error("Error fetching templates:", error);
+    // Load saved templates from localStorage
+    const savedTemplatesData = localStorage.getItem('quoteTemplates');
+    if (savedTemplatesData) {
+      try {
+        const templates = JSON.parse(savedTemplatesData);
+        setSavedTemplates(templates);
+      } catch (e) {
+        console.error("Error parsing templates:", e);
+      }
     }
-  };
+  }, []);
 
   useEffect(() => {
     const fetchQuoteData = async () => {
@@ -271,32 +264,88 @@ const QuoteView = () => {
     }
   };
 
-  const handleApplyTemplate = (templateId: string) => {
-    const template = templates.find(t => t.id === templateId);
-    if (!template) return;
-    
-    try {
-      // Apply template settings to the current quote
-      if (template.content) {
-        const content = template.content;
-        
-        // Update company branding settings
-        if (content.companyLogo) setCompanyLogo(content.companyLogo);
-        if (content.companyName) setCompanyName(content.companyName);
-        if (content.companyAddress) setCompanyAddress(content.companyAddress);
-        if (content.companyContact) setCompanyContact(content.companyContact);
-        if (content.companyEmail) setCompanyEmail(content.companyEmail);
-        if (content.primaryColor) setPrimaryColor(content.primaryColor);
-        
-        // Save these settings to localStorage
-        handleSaveSettings();
-      }
-      
-      toast.success(`Template "${template.name}" applied successfully`);
-    } catch (error) {
-      console.error("Error applying template:", error);
-      toast.error("Failed to apply template");
+  // Function to save current settings as a template
+  const handleSaveTemplate = () => {
+    if (!templateName.trim()) {
+      toast.error("Please enter a template name");
+      return;
     }
+
+    const settings = {
+      companyLogo,
+      companyName,
+      companyAddress,
+      companyContact,
+      companyEmail,
+      primaryColor
+    };
+
+    const updatedTemplates = [
+      ...savedTemplates,
+      { name: templateName, settings }
+    ];
+
+    setSavedTemplates(updatedTemplates);
+    localStorage.setItem('quoteTemplates', JSON.stringify(updatedTemplates));
+    setTemplateName("");
+    toast.success(`Template "${templateName}" saved successfully`);
+  };
+
+  // Function to apply a saved template
+  const handleApplyTemplate = (index: number) => {
+    if (index < 0 || index >= savedTemplates.length) return;
+    
+    const template = savedTemplates[index];
+    const settings = template.settings;
+    
+    // Apply template settings
+    if (settings.companyLogo) setCompanyLogo(settings.companyLogo);
+    if (settings.companyName) setCompanyName(settings.companyName);
+    if (settings.companyAddress) setCompanyAddress(settings.companyAddress);
+    if (settings.companyContact) setCompanyContact(settings.companyContact);
+    if (settings.companyEmail) setCompanyEmail(settings.companyEmail);
+    if (settings.primaryColor) setPrimaryColor(settings.primaryColor);
+    
+    toast.success(`Template "${template.name}" applied successfully`);
+  };
+
+  // Function to delete a saved template
+  const handleDeleteTemplate = (index: number) => {
+    if (index < 0 || index >= savedTemplates.length) return;
+    
+    const updatedTemplates = [...savedTemplates];
+    const deletedName = updatedTemplates[index].name;
+    updatedTemplates.splice(index, 1);
+    
+    setSavedTemplates(updatedTemplates);
+    localStorage.setItem('quoteTemplates', JSON.stringify(updatedTemplates));
+    toast.success(`Template "${deletedName}" deleted`);
+  };
+
+  // Function to handle docx file upload
+  const handleTemplateFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // For now, just show a toast notification since we can't process docx files in the browser
+    toast.info(`File "${file.name}" uploaded. Note: Processing DOCX files directly is not supported in this web app.`);
+    
+    // Create a template entry with the file name
+    const templateEntry = {
+      name: file.name.replace('.docx', ''),
+      settings: {
+        companyLogo,
+        companyName,
+        companyAddress,
+        companyContact,
+        companyEmail,
+        primaryColor
+      }
+    };
+    
+    const updatedTemplates = [...savedTemplates, templateEntry];
+    setSavedTemplates(updatedTemplates);
+    localStorage.setItem('quoteTemplates', JSON.stringify(updatedTemplates));
   };
 
   // Function to close the sheet
@@ -369,7 +418,7 @@ const QuoteView = () => {
                 <SelectItem value="draft">Draft</SelectItem>
                 <SelectItem value="sent">Sent</SelectItem>
                 <SelectItem value="accepted">Accepted</SelectItem>
-                <SelectItem value="declined">Declined</SelectItem>
+                <SelectItem value="declined">Decline</SelectItem>
                 <SelectItem value="expired">Expired</SelectItem>
               </SelectContent>
             </Select>
@@ -398,7 +447,7 @@ const QuoteView = () => {
             Print Quote
           </Button>
           
-          {/* Replace Dialog with Sheet for company branding */}
+          {/* Sheet for company branding with improved layout */}
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="outline" className="flex-1">
@@ -416,100 +465,145 @@ const QuoteView = () => {
               </SheetHeader>
               
               <ScrollArea className="h-[calc(100vh-180px)] pr-4">
-                {templates.length > 0 && (
-                  <div className="grid gap-2">
-                    <Label htmlFor="template">Use Template</Label>
-                    <Select
-                      value={selectedTemplate || ""}
-                      onValueChange={(value) => {
-                        setSelectedTemplate(value);
-                        handleApplyTemplate(value);
-                      }}
-                    >
-                      <SelectTrigger id="template">
-                        <SelectValue placeholder="Select a template..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {templates.map((template) => (
-                          <SelectItem key={template.id} value={template.id}>
-                            {template.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-                
-                <div className="space-y-6 py-4">
-                  <div className="grid gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="logo">Company Logo</Label>
-                      <div className="flex items-center gap-4">
-                        {companyLogo && (
-                          <img 
-                            src={companyLogo} 
-                            alt="Company Logo" 
-                            className="h-12 w-auto object-contain"
-                          />
-                        )}
-                        <Input
-                          id="logo"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleLogoChange}
-                        />
-                      </div>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="companyName">Company Name</Label>
-                      <Input
-                        id="companyName"
-                        value={companyName}
-                        onChange={(e) => setCompanyName(e.target.value)}
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="companyAddress">Company Address</Label>
-                      <Textarea
-                        id="companyAddress"
-                        value={companyAddress}
-                        onChange={(e) => setCompanyAddress(e.target.value)}
-                        rows={2}
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="companyContact">Phone Number</Label>
-                      <Input
-                        id="companyContact"
-                        value={companyContact}
-                        onChange={(e) => setCompanyContact(e.target.value)}
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="companyEmail">Email</Label>
-                      <Input
-                        id="companyEmail"
-                        type="email"
-                        value={companyEmail}
-                        onChange={(e) => setCompanyEmail(e.target.value)}
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="primaryColor">Primary Color</Label>
+                {/* Templates Section */}
+                <div className="space-y-6 pt-4">
+                  <div className="border rounded-md p-4">
+                    <h3 className="text-md font-medium mb-2">Templates</h3>
+                    
+                    {/* Upload template file */}
+                    <div className="grid gap-2 mb-4">
+                      <Label htmlFor="templateUpload">Upload Template (.docx)</Label>
                       <div className="flex gap-2">
                         <Input
-                          id="primaryColor"
-                          type="color"
-                          value={primaryColor}
-                          onChange={(e) => setPrimaryColor(e.target.value)}
-                          className="w-16 h-10 p-1"
+                          id="templateUpload"
+                          type="file"
+                          accept=".docx"
+                          onChange={handleTemplateFileUpload}
                         />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Upload a DOCX template to save its name and your current branding settings.
+                      </p>
+                    </div>
+                    
+                    {/* Save current as template */}
+                    <div className="grid gap-2 mb-4">
+                      <Label htmlFor="templateName">Save Current as Template</Label>
+                      <div className="flex gap-2">
                         <Input
-                          value={primaryColor}
-                          onChange={(e) => setPrimaryColor(e.target.value)}
-                          placeholder="#000000"
-                          className="flex-1"
+                          id="templateName"
+                          placeholder="Template name"
+                          value={templateName}
+                          onChange={(e) => setTemplateName(e.target.value)}
                         />
+                        <Button onClick={handleSaveTemplate}>Save</Button>
+                      </div>
+                    </div>
+                    
+                    {/* Saved templates list */}
+                    {savedTemplates.length > 0 && (
+                      <div className="mt-4">
+                        <Label>Saved Templates</Label>
+                        <div className="mt-2 space-y-2">
+                          {savedTemplates.map((template, index) => (
+                            <div key={index} className="flex items-center justify-between border p-2 rounded">
+                              <span className="text-sm font-medium">{template.name}</span>
+                              <div className="flex gap-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => handleApplyTemplate(index)}
+                                >
+                                  Apply
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="destructive" 
+                                  onClick={() => handleDeleteTemplate(index)}
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                
+                  {/* Company Branding Settings */}
+                  <div className="border rounded-md p-4">
+                    <h3 className="text-md font-medium mb-2">Branding Settings</h3>
+                    <div className="grid gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="logo">Company Logo</Label>
+                        <div className="flex items-center gap-4">
+                          {companyLogo && (
+                            <img 
+                              src={companyLogo} 
+                              alt="Company Logo" 
+                              className="h-12 w-auto object-contain"
+                            />
+                          )}
+                          <Input
+                            id="logo"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoChange}
+                          />
+                        </div>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="companyName">Company Name</Label>
+                        <Input
+                          id="companyName"
+                          value={companyName}
+                          onChange={(e) => setCompanyName(e.target.value)}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="companyAddress">Company Address</Label>
+                        <Textarea
+                          id="companyAddress"
+                          value={companyAddress}
+                          onChange={(e) => setCompanyAddress(e.target.value)}
+                          rows={2}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="companyContact">Phone Number</Label>
+                        <Input
+                          id="companyContact"
+                          value={companyContact}
+                          onChange={(e) => setCompanyContact(e.target.value)}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="companyEmail">Email</Label>
+                        <Input
+                          id="companyEmail"
+                          type="email"
+                          value={companyEmail}
+                          onChange={(e) => setCompanyEmail(e.target.value)}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="primaryColor">Primary Color</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="primaryColor"
+                            type="color"
+                            value={primaryColor}
+                            onChange={(e) => setPrimaryColor(e.target.value)}
+                            className="w-16 h-10 p-1"
+                          />
+                          <Input
+                            value={primaryColor}
+                            onChange={(e) => setPrimaryColor(e.target.value)}
+                            placeholder="#000000"
+                            className="flex-1"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
