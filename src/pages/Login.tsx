@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { FileText } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { motion } from "framer-motion";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -15,6 +17,15 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
+
+  // If user is already logged in, redirect to dashboard
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,64 +61,72 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <FileText className="h-12 w-12 text-primary" />
-          </div>
-          <CardTitle className="text-2xl">{isSignUp ? "Create an account" : "Login"}</CardTitle>
-          <CardDescription>
-            {isSignUp 
-              ? "Enter your email and password to create your account" 
-              : "Enter your email and password to access your account"}
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleAuth}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="your.email@example.com" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-50 to-blue-100 p-4">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
+      >
+        <Card className="shadow-xl border-indigo-100">
+          <CardHeader className="space-y-1 text-center">
+            <div className="flex justify-center mb-4">
+              <FileText className="h-12 w-12 text-indigo-600" />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input 
-                id="password" 
-                type="password" 
-                placeholder="Your password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Please wait..." : isSignUp ? "Create account" : "Login"}
-            </Button>
-            <Button 
-              type="button" 
-              variant="link" 
-              className="w-full"
-              onClick={() => setIsSignUp(!isSignUp)}
-            >
-              {isSignUp ? "Already have an account? Login" : "Don't have an account? Sign up"}
-            </Button>
-            <div className="text-center text-sm text-muted-foreground">
-              <Link to="/" className="hover:text-primary">
-                Back to homepage
-              </Link>
-            </div>
-          </CardFooter>
-        </form>
-      </Card>
+            <CardTitle className="text-2xl font-display text-indigo-700">{isSignUp ? "Create an account" : "Welcome back"}</CardTitle>
+            <CardDescription className="text-indigo-500">
+              {isSignUp 
+                ? "Enter your email and password to create your account" 
+                : "Enter your email and password to access your account"}
+            </CardDescription>
+          </CardHeader>
+          <form onSubmit={handleAuth}>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-indigo-700">Email</Label>
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="your.email@example.com" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="border-indigo-200 focus:border-indigo-400"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-indigo-700">Password</Label>
+                <Input 
+                  id="password" 
+                  type="password" 
+                  placeholder="Your password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="border-indigo-200 focus:border-indigo-400"
+                />
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-4">
+              <Button 
+                type="submit" 
+                className="w-full bg-indigo-600 hover:bg-indigo-700 transition-all duration-300" 
+                disabled={isLoading}
+              >
+                {isLoading ? "Please wait..." : isSignUp ? "Create account" : "Login"}
+              </Button>
+              <Button 
+                type="button" 
+                variant="link" 
+                className="w-full text-indigo-600"
+                onClick={() => setIsSignUp(!isSignUp)}
+              >
+                {isSignUp ? "Already have an account? Login" : "Don't have an account? Sign up"}
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
+      </motion.div>
     </div>
   );
 };

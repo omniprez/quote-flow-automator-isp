@@ -6,10 +6,11 @@ import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
   children: ReactNode;
+  requireAdmin?: boolean;
 }
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, isLoading } = useAuth();
+export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
+  const { user, isLoading, userRole } = useAuth();
 
   if (isLoading) {
     return (
@@ -21,6 +22,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Check for admin requirement
+  if (requireAdmin && userRole !== 'admin') {
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

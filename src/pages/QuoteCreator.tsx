@@ -10,7 +10,6 @@ import { OptionsFeatures } from "@/components/quote/OptionsFeatures";
 import { QuoteReview } from "@/components/quote/QuoteReview";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
 
 interface QuoteData {
   customerId?: string;
@@ -35,11 +34,6 @@ const QuoteCreator = () => {
   const { user } = useAuth();
   const [activeStep, setActiveStep] = useState("customer");
   const [quoteData, setQuoteData] = useState<QuoteData>({});
-
-  // Redirect to login if not authenticated
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
 
   const handleCustomerComplete = (customerId: string, customerData: CustomerFormValues) => {
     setQuoteData({
@@ -92,27 +86,27 @@ const QuoteCreator = () => {
         <div className="flex items-center">
           <Link 
             to="/" 
-            className="flex items-center text-sm text-muted-foreground hover:text-primary"
+            className="flex items-center text-sm text-indigo-600 hover:text-indigo-800 transition-colors duration-200"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
             Back to Dashboard
           </Link>
         </div>
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">Create New Quote</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-indigo-700 font-display">Create New Quote</h1>
         </div>
-        <p className="text-muted-foreground">
+        <p className="text-indigo-600">
           Create a professional quote for your customers by following the steps below.
           All prices are in Mauritian Rupees (MUR) and exclusive of VAT.
         </p>
       </div>
       
       <Tabs defaultValue="customer" className="mt-6" onValueChange={setActiveStep} value={activeStep}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="customer">Customer</TabsTrigger>
-          <TabsTrigger value="service" disabled={!quoteData.customerId}>Service Selection</TabsTrigger>
-          <TabsTrigger value="options" disabled={!quoteData.serviceId}>Options & Features</TabsTrigger>
-          <TabsTrigger value="review" disabled={!quoteData.serviceId}>Review & Generate</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 bg-indigo-100">
+          <TabsTrigger value="customer" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white">Customer</TabsTrigger>
+          <TabsTrigger value="service" disabled={!quoteData.customerId} className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white">Service Selection</TabsTrigger>
+          <TabsTrigger value="options" disabled={!quoteData.serviceId} className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white">Options & Features</TabsTrigger>
+          <TabsTrigger value="review" disabled={!quoteData.serviceId} className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white">Review & Generate</TabsTrigger>
         </TabsList>
         
         <TabsContent value="customer" className="mt-6">
