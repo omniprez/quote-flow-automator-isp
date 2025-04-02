@@ -123,6 +123,30 @@ export function QuoteReview({
       if (validColumns.includes('service_id') && serviceId) {
         quoteData.service_id = serviceId;
       }
+      
+      // Add metadata about the service and bandwidth to the notes if they're not stored elsewhere
+      if (!validColumns.includes('service_id') && serviceId && serviceName) {
+        // Store service information in JSON format in the notes field for retrieval later
+        const metadataObject = {
+          service: {
+            id: serviceId,
+            name: serviceName
+          },
+          bandwidth: bandwidthId ? {
+            id: bandwidthId,
+            value: bandwidthValue,
+            unit: bandwidthUnit
+          } : null,
+          features: selectedFeatures ? selectedFeatures.ids.map((id, index) => ({
+            id,
+            name: selectedFeatures.names[index]
+          })) : []
+        };
+        
+        // Prepend the metadata as a JSON comment at the beginning of the notes
+        const metadataString = JSON.stringify(metadataObject);
+        quoteData.notes = `<!-- QUOTE_METADATA: ${metadataString} -->\n${notes}`;
+      }
 
       console.log("Inserting quote with data:", quoteData);
 
@@ -140,11 +164,26 @@ export function QuoteReview({
 
       console.log("Quote created successfully:", quote);
 
-      // If we have features, we should store them in a separate way
-      // In a real app, we might create a quote_features junction table
+      // Store the relationship between the quote and the selected features
       if (selectedFeatures && selectedFeatures.ids.length > 0) {
         console.log("Selected features to be stored separately:", selectedFeatures.ids);
-        // Future implementation: create records in a quote_features table
+        
+        // For each feature, create a record in a quote_features table (if it exists)
+        // Note: Since we don't have a quote_features table in our schema yet, we'll just log this
+        // In a real app, we would create this table and store the relationships
+        
+        // Here's how it would look if we had a quote_features table:
+        // const { error: featuresError } = await supabase
+        //   .from("quote_features")
+        //   .insert(selectedFeatures.ids.map(featureId => ({
+        //     quote_id: quote.id,
+        //     feature_id: featureId
+        //   })));
+        // 
+        // if (featuresError) {
+        //   console.error("Error storing features:", featuresError);
+        //   // We'll continue even if this fails, since the quote is created
+        // }
       }
 
       toast.success("Quote generated successfully!");
