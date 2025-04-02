@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 interface Feature {
   id: string;
@@ -44,35 +45,30 @@ export function OptionsFeatures({
       }
 
       try {
-        // First, get feature IDs linked to this service
-        const { data: serviceFeatures, error: serviceError } = await supabase
-          .from("service_features")
-          .select("feature_id")
-          .eq("service_id", serviceId);
-
-        if (serviceError) throw serviceError;
-
-        if (!serviceFeatures || serviceFeatures.length === 0) {
-          setFeatures([]);
+        console.log("Fetching features for service ID:", serviceId);
+        
+        // First approach: Get all features (if service_features might be empty)
+        const { data: allFeatures, error: allFeaturesError } = await supabase
+          .from("additional_features")
+          .select("*")
+          .order("name");
+        
+        if (allFeaturesError) throw allFeaturesError;
+        
+        if (allFeatures && allFeatures.length > 0) {
+          console.log("All available features:", allFeatures);
+          setFeatures(allFeatures);
           setIsLoading(false);
           return;
         }
 
-        // Get feature IDs as an array
-        const featureIds = serviceFeatures.map(sf => sf.feature_id);
+        // If we have no features at all, stop here
+        setFeatures([]);
+        setIsLoading(false);
 
-        // Then, get the actual feature details
-        const { data: featuresData, error: featuresError } = await supabase
-          .from("additional_features")
-          .select("*")
-          .in("id", featureIds);
-
-        if (featuresError) throw featuresError;
-        setFeatures(featuresData || []);
       } catch (error) {
         console.error("Error fetching features:", error);
         toast.error("Failed to load available features");
-      } finally {
         setIsLoading(false);
       }
     };
@@ -102,6 +98,13 @@ export function OptionsFeatures({
       (sum, feature) => sum + feature.one_time_fee, 0
     );
 
+    console.log("Selected features for quote:", {
+      ids: selectedFeatures,
+      names: selectedFeatureObjects.map(f => f.name),
+      monthlyTotal,
+      oneTimeTotal
+    });
+
     onComplete({
       ids: selectedFeatures,
       names: selectedFeatureObjects.map(f => f.name),
@@ -111,7 +114,12 @@ export function OptionsFeatures({
   };
 
   if (isLoading) {
-    return <div className="text-center py-10">Loading available features...</div>;
+    return (
+      <div className="flex items-center justify-center py-10 space-x-2">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <span>Loading available features...</span>
+      </div>
+    );
   }
 
   if (!serviceId) {
@@ -140,7 +148,7 @@ export function OptionsFeatures({
                       checked={selectedFeatures.includes(feature.id)}
                       onCheckedChange={() => toggleFeature(feature.id)}
                     />
-                    <div className="space-y-1">
+                    <div className="space-y-1 flex-1">
                       <Label 
                         htmlFor={`feature-${feature.id}`}
                         className="font-medium cursor-pointer"

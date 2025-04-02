@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/toaster";
@@ -8,6 +9,8 @@ import { ServiceSelection } from "@/components/quote/ServiceSelection";
 import { OptionsFeatures } from "@/components/quote/OptionsFeatures";
 import { QuoteReview } from "@/components/quote/QuoteReview";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { Navigate } from "react-router-dom";
 
 interface QuoteData {
   customerId?: string;
@@ -29,8 +32,14 @@ interface QuoteData {
 }
 
 const QuoteCreator = () => {
+  const { user } = useAuth();
   const [activeStep, setActiveStep] = useState("customer");
   const [quoteData, setQuoteData] = useState<QuoteData>({});
+
+  // Redirect to login if not authenticated
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
   const handleCustomerComplete = (customerId: string, customerData: CustomerFormValues) => {
     setQuoteData({
@@ -64,6 +73,7 @@ const QuoteCreator = () => {
     monthlyTotal: number;
     oneTimeTotal: number;
   }) => {
+    console.log("Features data received:", featuresData);
     setQuoteData({
       ...quoteData,
       selectedFeatures: featuresData
@@ -72,7 +82,7 @@ const QuoteCreator = () => {
   };
 
   const handleQuoteGenerated = (quoteId: string) => {
-    // In a real app, might redirect to the quote view page
+    toast.success("Quote generated successfully!");
     console.log("Quote generated with ID:", quoteId);
   };
 
@@ -100,9 +110,9 @@ const QuoteCreator = () => {
       <Tabs defaultValue="customer" className="mt-6" onValueChange={setActiveStep} value={activeStep}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="customer">Customer</TabsTrigger>
-          <TabsTrigger value="service">Service Selection</TabsTrigger>
-          <TabsTrigger value="options">Options & Features</TabsTrigger>
-          <TabsTrigger value="review">Review & Generate</TabsTrigger>
+          <TabsTrigger value="service" disabled={!quoteData.customerId}>Service Selection</TabsTrigger>
+          <TabsTrigger value="options" disabled={!quoteData.serviceId}>Options & Features</TabsTrigger>
+          <TabsTrigger value="review" disabled={!quoteData.serviceId}>Review & Generate</TabsTrigger>
         </TabsList>
         
         <TabsContent value="customer" className="mt-6">
