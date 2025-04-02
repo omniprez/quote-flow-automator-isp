@@ -47,7 +47,7 @@ export function QuoteDocument({
           <h1 className="text-3xl font-bold mb-1" style={headerStyle}>QUOTE</h1>
           <p className="text-lg">#{quoteData.quote_number}</p>
           <p className="text-sm text-muted-foreground mt-1">
-            Date: {new Date(quoteData.quote_date).toLocaleDateString()}
+            Date: {new Date(quoteData.quote_date || quoteData.created_at).toLocaleDateString()}
           </p>
           {quoteData.expiration_date && (
             <p className="text-sm text-muted-foreground">
@@ -138,14 +138,14 @@ export function QuoteDocument({
               </td>
             </tr>
             
-            {featuresData.map((feature, index) => (
+            {featuresData && featuresData.length > 0 && featuresData.map((feature, index) => (
               <tr key={index} className="border-b">
                 <td className="py-3 px-4">{feature.name}</td>
                 <td className="py-3 px-4 text-right">
-                  MUR {formatCurrency(feature.one_time_fee)}
+                  MUR {formatCurrency(feature.one_time_fee || 0)}
                 </td>
                 <td className="py-3 px-4 text-right">
-                  MUR {formatCurrency(feature.monthly_price)}
+                  MUR {formatCurrency(feature.monthly_price || 0)}
                 </td>
               </tr>
             ))}

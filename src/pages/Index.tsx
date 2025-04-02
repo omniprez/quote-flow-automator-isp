@@ -7,10 +7,9 @@ const Index = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100">
       <div className="text-center space-y-8 max-w-3xl px-4">
-        <h1 className="text-5xl font-bold mb-4 text-primary">ISP Quote Flow Automator</h1>
+        <h1 className="text-5xl font-bold mb-4 text-primary">MCS Quote Automator</h1>
         <p className="text-xl text-gray-600 mx-auto">
-          Create and manage professional quotes for internet service providers in Mauritius.
-          Streamline your sales process with our automated workflow system for DIA, EBI, and Private WAN services.
+          Quote automation app to increase your productivity
         </p>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-10">

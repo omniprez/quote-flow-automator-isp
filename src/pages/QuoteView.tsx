@@ -1,14 +1,12 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Download, Send, Printer, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Skeleton } from "@/components/ui/skeleton";
 import { QuoteDocument } from "@/components/quote/QuoteDocument";
 import { generatePdf } from "@/lib/pdf-generator";
 import { 
@@ -23,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/contexts/AuthContext";
 
 const QuoteView = () => {
   const { quoteId } = useParams();
@@ -34,13 +33,14 @@ const QuoteView = () => {
   const [bandwidthData, setBandwidthData] = useState<any>(null);
   const [featuresData, setFeaturesData] = useState<any[]>([]);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const { user } = useAuth();
   
   // Company branding states
   const [companyLogo, setCompanyLogo] = useState<string>("/placeholder.svg");
-  const [companyName, setCompanyName] = useState<string>("ISP Services Ltd");
+  const [companyName, setCompanyName] = useState<string>("MCS Ltd");
   const [companyAddress, setCompanyAddress] = useState<string>("Ebene CyberCity\nEbene, Mauritius");
   const [companyContact, setCompanyContact] = useState<string>("+230 123 4567");
-  const [companyEmail, setCompanyEmail] = useState<string>("sales@ispservices.mu");
+  const [companyEmail, setCompanyEmail] = useState<string>("sales@mcs.mu");
   const [primaryColor, setPrimaryColor] = useState<string>("#3b82f6");
 
   // Load company settings from localStorage on mount
@@ -94,9 +94,41 @@ const QuoteView = () => {
         if (customerError) throw customerError;
         setCustomerData(customer);
         
-        // For a real implementation, we would fetch service, bandwidth, and features data
-        // based on what was saved in the quote
-        // This is a simplified implementation
+        // Fetch service and bandwidth data
+        // In a real implementation, this would be stored in the quote record
+        // This is a simplified implementation to fetch related data
+        
+        // Assuming we have a record of the selected service in the quote
+        if (quote.service_id) {
+          const { data: service } = await supabase
+            .from("services")
+            .select("*")
+            .eq("id", quote.service_id)
+            .maybeSingle();
+            
+          setServiceData(service);
+        }
+        
+        // Fetch bandwidth data if available
+        if (quote.bandwidth_id) {
+          const { data: bandwidth } = await supabase
+            .from("bandwidth_options")
+            .select("*")
+            .eq("id", quote.bandwidth_id)
+            .maybeSingle();
+            
+          setBandwidthData(bandwidth);
+        }
+        
+        // Fetch selected features
+        if (quote.selected_features && quote.selected_features.length > 0) {
+          const { data: features } = await supabase
+            .from("additional_features")
+            .select("*")
+            .in("id", quote.selected_features);
+            
+          setFeaturesData(features || []);
+        }
 
       } catch (err) {
         console.error("Error fetching quote:", err);
