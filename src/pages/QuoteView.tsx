@@ -1,45 +1,20 @@
-import { useState, useEffect, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Download, Send, Printer, Settings, Upload, Code, FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { QuoteDocument } from "@/components/quote/QuoteDocument";
-import { HtmlTemplateEditor } from "@/components/quote/HtmlTemplateEditor";
-import { generatePdf } from "@/lib/pdf-generator";
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Dialog } from "@/components/ui/dialog";
+import { Sheet } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetClose,
-} from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
+import { QuoteDocument } from "@/components/quote/QuoteDocument";
+import { QuoteHeader } from "@/components/quote/QuoteHeader";
+import { QuoteActions } from "@/components/quote/QuoteActions";
+import { BrandingSheet } from "@/components/quote/BrandingSheet";
+import { HtmlTemplateDialog } from "@/components/quote/HtmlTemplateDialog";
+import { generatePdf } from "@/lib/pdf-generator";
 
 const QuoteView = () => {
   const { quoteId } = useParams();
@@ -55,9 +30,6 @@ const QuoteView = () => {
   const [isHtmlTemplateDialogOpen, setIsHtmlTemplateDialogOpen] = useState(false);
   const [activeHtmlTemplate, setActiveHtmlTemplate] = useState<string | undefined>(undefined);
   const { user } = useAuth();
-  
-  // Create refs for the sheet close button
-  const sheetCloseRef = useRef<HTMLButtonElement>(null);
   
   // Company branding states
   const [companyLogo, setCompanyLogo] = useState<string>("/placeholder.svg");
@@ -268,12 +240,7 @@ const QuoteView = () => {
   };
 
   // Function to save current settings as a template
-  const handleSaveTemplate = () => {
-    if (!templateName.trim()) {
-      toast.error("Please enter a template name");
-      return;
-    }
-
+  const handleSaveTemplate = (name: string) => {
     const settings = {
       companyLogo,
       companyName,
@@ -285,13 +252,12 @@ const QuoteView = () => {
 
     const updatedTemplates = [
       ...savedTemplates,
-      { name: templateName, settings }
+      { name, settings }
     ];
 
     setSavedTemplates(updatedTemplates);
     localStorage.setItem('quoteTemplates', JSON.stringify(updatedTemplates));
-    setTemplateName("");
-    toast.success(`Template "${templateName}" saved successfully`);
+    toast.success(`Template "${name}" saved successfully`);
   };
 
   // Function to apply a saved template
@@ -357,13 +323,6 @@ const QuoteView = () => {
     localStorage.setItem('quoteTemplates', JSON.stringify(updatedTemplates));
   };
 
-  // Function to close the sheet
-  const closeSheet = () => {
-    if (sheetCloseRef.current) {
-      sheetCloseRef.current.click();
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="container mx-auto py-6 max-w-4xl">
@@ -382,12 +341,6 @@ const QuoteView = () => {
         <div className="flex flex-col items-center justify-center py-12">
           <h2 className="text-2xl font-semibold mb-4">Error</h2>
           <p className="text-muted-foreground mb-6">{error}</p>
-          <Button asChild>
-            <Link to="/quotes/create">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Create New Quote
-            </Link>
-          </Button>
         </div>
       </div>
     );
@@ -396,262 +349,19 @@ const QuoteView = () => {
   return (
     <div className="container mx-auto py-6 max-w-4xl">
       <div className="flex flex-col space-y-6">
-        <div className="flex items-center">
-          <Link 
-            to="/" 
-            className="flex items-center text-sm text-muted-foreground hover:text-primary"
-          >
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            Back to Dashboard
-          </Link>
-        </div>
+        <QuoteHeader 
+          quoteData={quoteData}
+          isUpdatingStatus={isUpdatingStatus}
+          onUpdateStatus={handleUpdateStatus}
+        />
         
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Quote #{quoteData?.quote_number}</h1>
-            <p className="text-muted-foreground">
-              Created on {new Date(quoteData?.created_at).toLocaleDateString()}
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Select
-              value={quoteData?.status}
-              onValueChange={handleUpdateStatus}
-              disabled={isUpdatingStatus}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="sent">Sent</SelectItem>
-                <SelectItem value="accepted">Accepted</SelectItem>
-                <SelectItem value="declined">Decline</SelectItem>
-                <SelectItem value="expired">Expired</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Badge variant="outline" className="capitalize">
-              {quoteData?.status || "draft"}
-            </Badge>
-          </div>
-        </div>
-        
-        <div className="flex flex-col md:flex-row gap-3 print:hidden">
-          <Button 
-            onClick={handleDownloadPdf} 
-            disabled={isGeneratingPdf}
-            className="flex-1"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            {isGeneratingPdf ? "Generating..." : "Download PDF"}
-          </Button>
-          <Button onClick={handleSendEmail} variant="outline" className="flex-1">
-            <Send className="mr-2 h-4 w-4" />
-            Email Quote
-          </Button>
-          <Button onClick={handlePrint} variant="outline" className="flex-1">
-            <Printer className="mr-2 h-4 w-4" />
-            Print Quote
-          </Button>
-          
-          {/* HTML Template Editor Dialog */}
-          <Dialog open={isHtmlTemplateDialogOpen} onOpenChange={setIsHtmlTemplateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="flex-1">
-                <Code className="mr-2 h-4 w-4" />
-                HTML Template
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl h-[90vh]">
-              <DialogHeader>
-                <DialogTitle>HTML Template Editor</DialogTitle>
-                <DialogDescription>
-                  Create and manage HTML templates for your quotes
-                </DialogDescription>
-              </DialogHeader>
-              <div className="pt-4">
-                <HtmlTemplateEditor onApplyTemplate={handleApplyHtmlTemplate} />
-              </div>
-            </DialogContent>
-          </Dialog>
-          
-          {/* Branding Sheet */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="outline" className="flex-1">
-                <Settings className="mr-2 h-4 w-4" />
-                Company Branding
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="overflow-y-auto">
-              <SheetClose ref={sheetCloseRef} className="hidden" />
-              <SheetHeader>
-                <SheetTitle>Company Branding</SheetTitle>
-                <SheetDescription>
-                  Customize your quote with your company branding
-                </SheetDescription>
-              </SheetHeader>
-              
-              <ScrollArea className="h-[calc(100vh-180px)] pr-4">
-                {/* Templates Section */}
-                <div className="space-y-6 pt-4">
-                  <div className="border rounded-md p-4">
-                    <h3 className="text-md font-medium mb-2">Templates</h3>
-                    
-                    {/* Upload template file */}
-                    <div className="grid gap-2 mb-4">
-                      <Label htmlFor="templateUpload">Upload Template (.docx)</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          id="templateUpload"
-                          type="file"
-                          accept=".docx"
-                          onChange={handleTemplateFileUpload}
-                        />
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Upload a DOCX template to save its name and your current branding settings.
-                      </p>
-                    </div>
-                    
-                    {/* Save current as template */}
-                    <div className="grid gap-2 mb-4">
-                      <Label htmlFor="templateName">Save Current as Template</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          id="templateName"
-                          placeholder="Template name"
-                          value={templateName}
-                          onChange={(e) => setTemplateName(e.target.value)}
-                        />
-                        <Button onClick={handleSaveTemplate}>Save</Button>
-                      </div>
-                    </div>
-                    
-                    {/* Saved templates list */}
-                    {savedTemplates.length > 0 && (
-                      <div className="mt-4">
-                        <Label>Saved Templates</Label>
-                        <div className="mt-2 space-y-2">
-                          {savedTemplates.map((template, index) => (
-                            <div key={index} className="flex items-center justify-between border p-2 rounded">
-                              <span className="text-sm font-medium">{template.name}</span>
-                              <div className="flex gap-2">
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  onClick={() => handleApplyTemplate(index)}
-                                >
-                                  Apply
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="destructive" 
-                                  onClick={() => handleDeleteTemplate(index)}
-                                >
-                                  Delete
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                
-                  {/* Company Branding Settings */}
-                  <div className="border rounded-md p-4">
-                    <h3 className="text-md font-medium mb-2">Branding Settings</h3>
-                    <div className="grid gap-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="logo">Company Logo</Label>
-                        <div className="flex items-center gap-4">
-                          {companyLogo && (
-                            <img 
-                              src={companyLogo} 
-                              alt="Company Logo" 
-                              className="h-12 w-auto object-contain"
-                            />
-                          )}
-                          <Input
-                            id="logo"
-                            type="file"
-                            accept="image/*"
-                            onChange={handleLogoChange}
-                          />
-                        </div>
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="companyName">Company Name</Label>
-                        <Input
-                          id="companyName"
-                          value={companyName}
-                          onChange={(e) => setCompanyName(e.target.value)}
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="companyAddress">Company Address</Label>
-                        <Textarea
-                          id="companyAddress"
-                          value={companyAddress}
-                          onChange={(e) => setCompanyAddress(e.target.value)}
-                          rows={2}
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="companyContact">Phone Number</Label>
-                        <Input
-                          id="companyContact"
-                          value={companyContact}
-                          onChange={(e) => setCompanyContact(e.target.value)}
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="companyEmail">Email</Label>
-                        <Input
-                          id="companyEmail"
-                          type="email"
-                          value={companyEmail}
-                          onChange={(e) => setCompanyEmail(e.target.value)}
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="primaryColor">Primary Color</Label>
-                        <div className="flex gap-2">
-                          <Input
-                            id="primaryColor"
-                            type="color"
-                            value={primaryColor}
-                            onChange={(e) => setPrimaryColor(e.target.value)}
-                            className="w-16 h-10 p-1"
-                          />
-                          <Input
-                            value={primaryColor}
-                            onChange={(e) => setPrimaryColor(e.target.value)}
-                            placeholder="#000000"
-                            className="flex-1"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </ScrollArea>
-              
-              <div className="mt-6 flex justify-end gap-2">
-                <Button variant="outline" onClick={closeSheet}>Cancel</Button>
-                <Button onClick={() => {
-                  handleSaveSettings();
-                  closeSheet();
-                }}>
-                  Save Changes
-                </Button>
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
+        <QuoteActions
+          isGeneratingPdf={isGeneratingPdf}
+          onDownloadPdf={handleDownloadPdf}
+          onSendEmail={handleSendEmail}
+          onPrint={handlePrint}
+          onHtmlTemplateDialogOpenChange={setIsHtmlTemplateDialogOpen}
+        />
         
         <Separator className="my-2" />
         
@@ -672,6 +382,35 @@ const QuoteView = () => {
           />
         </div>
       </div>
+
+      {/* HTML Template Dialog */}
+      <Dialog open={isHtmlTemplateDialogOpen} onOpenChange={setIsHtmlTemplateDialogOpen}>
+        <HtmlTemplateDialog onApplyTemplate={handleApplyHtmlTemplate} />
+      </Dialog>
+      
+      {/* Branding Sheet */}
+      <Sheet>
+        <BrandingSheet
+          companyLogo={companyLogo}
+          companyName={companyName}
+          companyAddress={companyAddress}
+          companyContact={companyContact}
+          companyEmail={companyEmail}
+          primaryColor={primaryColor}
+          savedTemplates={savedTemplates}
+          onLogoChange={handleLogoChange}
+          onCompanyNameChange={(e) => setCompanyName(e.target.value)}
+          onCompanyAddressChange={(e) => setCompanyAddress(e.target.value)}
+          onCompanyContactChange={(e) => setCompanyContact(e.target.value)}
+          onCompanyEmailChange={(e) => setCompanyEmail(e.target.value)}
+          onPrimaryColorChange={(e) => setPrimaryColor(e.target.value)}
+          onApplyTemplate={handleApplyTemplate}
+          onDeleteTemplate={handleDeleteTemplate}
+          onSaveTemplate={handleSaveTemplate}
+          onUploadTemplate={handleTemplateFileUpload}
+          onSaveSettings={handleSaveSettings}
+        />
+      </Sheet>
     </div>
   );
 };
