@@ -311,9 +311,6 @@ export function QuoteReview({
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
             />
-            <p className="text-xs text-muted-foreground">
-              After generating the quote, you'll be able to customize its appearance with HTML templates.
-            </p>
           </div>
 
           {/* Actions */}

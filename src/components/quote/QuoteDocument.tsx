@@ -8,7 +8,6 @@ import { QuoteSummaryTable } from "./QuoteSummaryTable";
 import { QuoteNotes } from "./QuoteNotes";
 import { TermsConditions } from "./TermsConditions";
 import { QuoteFooter } from "./QuoteFooter";
-import { HtmlTemplateRenderer } from "./HtmlTemplateRenderer";
 
 interface QuoteDocumentProps {
   quoteData: any;
@@ -22,7 +21,6 @@ interface QuoteDocumentProps {
   companyContact?: string;
   companyEmail?: string;
   primaryColor?: string;
-  htmlTemplate?: string;
 }
 
 export function QuoteDocument({ 
@@ -37,33 +35,11 @@ export function QuoteDocument({
   companyContact = "+230 123 4567",
   companyEmail = "sales@ispservices.mu",
   primaryColor = "#000",
-  htmlTemplate
 }: QuoteDocumentProps) {
   if (!quoteData || !customerData) {
     return <div>No data available</div>;
   }
 
-  // If an HTML template is provided, use it
-  if (htmlTemplate) {
-    return (
-      <HtmlTemplateRenderer
-        htmlTemplate={htmlTemplate}
-        quoteData={quoteData}
-        customerData={customerData}
-        serviceData={serviceData}
-        bandwidthData={bandwidthData}
-        featuresData={featuresData}
-        companyLogo={companyLogo}
-        companyName={companyName}
-        companyAddress={companyAddress}
-        companyContact={companyContact}
-        companyEmail={companyEmail}
-        primaryColor={primaryColor}
-      />
-    );
-  }
-
-  // If no HTML template is provided, use the default layout
   return (
     <div className="p-8 max-w-4xl mx-auto bg-white">
       {/* Header */}

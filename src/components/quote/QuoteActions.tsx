@@ -4,13 +4,8 @@ import {
   Download, 
   Send, 
   Printer, 
-  Settings, 
-  Code 
+  Settings
 } from "lucide-react";
-import { 
-  Dialog, 
-  DialogTrigger 
-} from "@/components/ui/dialog";
 import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 
 interface QuoteActionsProps {
@@ -18,15 +13,13 @@ interface QuoteActionsProps {
   onDownloadPdf: () => Promise<void>;
   onSendEmail: () => void;
   onPrint: () => void;
-  onHtmlTemplateDialogOpenChange: (open: boolean) => void;
 }
 
 export function QuoteActions({
   isGeneratingPdf,
   onDownloadPdf,
   onSendEmail,
-  onPrint,
-  onHtmlTemplateDialogOpenChange
+  onPrint
 }: QuoteActionsProps) {
   return (
     <div className="flex flex-col md:flex-row gap-3 print:hidden">
@@ -46,16 +39,6 @@ export function QuoteActions({
         <Printer className="mr-2 h-4 w-4" />
         Print Quote
       </Button>
-      
-      {/* HTML Template Editor Dialog */}
-      <Dialog onOpenChange={onHtmlTemplateDialogOpenChange}>
-        <DialogTrigger asChild>
-          <Button variant="outline" className="flex-1">
-            <Code className="mr-2 h-4 w-4" />
-            HTML Template
-          </Button>
-        </DialogTrigger>
-      </Dialog>
       
       {/* Branding Sheet */}
       <Sheet>

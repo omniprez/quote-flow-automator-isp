@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Dialog } from "@/components/ui/dialog";
 import { Sheet } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -13,7 +12,6 @@ import { QuoteDocument } from "@/components/quote/QuoteDocument";
 import { QuoteHeader } from "@/components/quote/QuoteHeader";
 import { QuoteActions } from "@/components/quote/QuoteActions";
 import { BrandingSheet } from "@/components/quote/BrandingSheet";
-import { HtmlTemplateDialog } from "@/components/quote/HtmlTemplateDialog";
 import { generatePdf } from "@/lib/pdf-generator";
 
 const QuoteView = () => {
@@ -27,8 +25,6 @@ const QuoteView = () => {
   const [featuresData, setFeaturesData] = useState<any[]>([]);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [isHtmlTemplateDialogOpen, setIsHtmlTemplateDialogOpen] = useState(false);
-  const [activeHtmlTemplate, setActiveHtmlTemplate] = useState<string | undefined>(undefined);
   const { user } = useAuth();
   
   // Company branding states
@@ -291,12 +287,6 @@ const QuoteView = () => {
     toast.success(`Template "${deletedName}" deleted`);
   };
 
-  // Function to handle HTML template selection
-  const handleApplyHtmlTemplate = (html: string) => {
-    setActiveHtmlTemplate(html);
-    setIsHtmlTemplateDialogOpen(false);
-  };
-
   // Function to handle template file upload
   const handleTemplateFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -360,7 +350,6 @@ const QuoteView = () => {
           onDownloadPdf={handleDownloadPdf}
           onSendEmail={handleSendEmail}
           onPrint={handlePrint}
-          onHtmlTemplateDialogOpenChange={setIsHtmlTemplateDialogOpen}
         />
         
         <Separator className="my-2" />
@@ -378,15 +367,9 @@ const QuoteView = () => {
             companyContact={companyContact}
             companyEmail={companyEmail}
             primaryColor={primaryColor}
-            htmlTemplate={activeHtmlTemplate}
           />
         </div>
       </div>
-
-      {/* HTML Template Dialog */}
-      <Dialog open={isHtmlTemplateDialogOpen} onOpenChange={setIsHtmlTemplateDialogOpen}>
-        <HtmlTemplateDialog onApplyTemplate={handleApplyHtmlTemplate} />
-      </Dialog>
       
       {/* Branding Sheet */}
       <Sheet>
