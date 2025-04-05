@@ -30,10 +30,10 @@ export function QuoteDocument({
   bandwidthData,
   featuresData = [],
   companyLogo = "/placeholder.svg",
-  companyName = "ISP Services Ltd",
-  companyAddress = "Ebene CyberCity\nEbene, Mauritius",
-  companyContact = "+230 123 4567",
-  companyEmail = "sales@ispservices.mu",
+  companyName = "Rogers Capital Technology Services Ltd",
+  companyAddress = "5, President John Kenney Street\nPort Louis, Mauritius",
+  companyContact = "+230 211 7801",
+  companyEmail = "mcs_sales@rogerscapital.mu",
   primaryColor = "#000",
 }: QuoteDocumentProps) {
   if (!quoteData || !customerData) {
