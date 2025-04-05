@@ -1,3 +1,4 @@
+
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
@@ -28,7 +29,7 @@ export function QuoteDocument({
   serviceData,
   bandwidthData,
   featuresData = [],
-  companyLogo = "/lovable-uploads/4ef83d86-9b81-4e3d-b16a-446ea5809713.png",
+  companyLogo = "/lovable-uploads/23117b0f-f2c2-44b0-a01f-0288914bd068.png",
   companyName = "Rogers Capital Technology Services Ltd",
   companyAddress = "5, President John Kennedy Street\nPort Louis, Republic of Mauritius",
   companyContact = "+(230) 211 7801",
