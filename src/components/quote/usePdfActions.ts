@@ -12,7 +12,7 @@ export function usePdfActions() {
       console.log("Starting PDF generation for quote:", quoteNumber || quoteId);
       console.log("PDF generation timestamp:", new Date().toISOString());
       
-      // Apply PDF preparation styles but maintain spacing
+      // Apply PDF preparation styles
       const quoteDocument = document.getElementById('quote-document');
       if (quoteDocument) {
         console.log("Applying document preparation for PDF generation");
@@ -47,6 +47,7 @@ export function usePdfActions() {
           // Set the dimensions to ensure it's displayed correctly
           (logo as HTMLImageElement).style.width = '250px';
           (logo as HTMLImageElement).style.height = 'auto';
+          (logo as HTMLImageElement).style.marginBottom = '8px'; // Add spacing below logo
           console.log("Set new logo src:", newLogo);
         });
       } else {
@@ -74,7 +75,6 @@ export function usePdfActions() {
       if (quoteDocument) {
         const docWidth = quoteDocument.offsetWidth;
         console.log("Document width before PDF generation:", docWidth, "pixels");
-        // Don't compress the document height - preserve proper spacing between lines
       }
       
       // Generate PDF with proper spacing
@@ -122,3 +122,4 @@ export function usePdfActions() {
     handlePrint
   };
 }
+

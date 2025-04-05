@@ -18,14 +18,21 @@ export function RCQuoteHeader({
           <span className="ml-1 font-medium">Technology</span>
         </div>
       </div>
-      <div className="flex items-center">
+      
+      {/* Right side with logo positioned above company info */}
+      <div className="flex flex-col items-end">
         <img 
           id="company-logo"
           src={companyLogo} 
           alt="Rogers Capital"
-          className="h-10 object-contain" 
+          className="h-10 object-contain mb-2" 
           crossOrigin="anonymous"
         />
+        <div className="text-right text-xs">
+          <p className="font-bold mb-0">Rogers Capital Technology Services Ltd</p>
+          <p className="mb-0">5, President John Kennedy Street</p>
+          <p className="mb-0">Port Louis, Republic of Mauritius</p>
+        </div>
       </div>
       
       <div className="w-full mt-4">
@@ -44,3 +51,4 @@ export function RCQuoteHeader({
     </div>
   );
 }
+

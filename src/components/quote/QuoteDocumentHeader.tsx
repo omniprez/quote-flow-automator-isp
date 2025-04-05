@@ -69,15 +69,15 @@ export function QuoteDocumentHeader({
         )}
       </div>
       <div className="text-right flex flex-col items-end">
-        {/* Display the Rogers Capital logo with no margins */}
-        <div className="mb-0" style={{ height: '40px', width: '240px' }}>
+        {/* Display the Rogers Capital logo above the company name with spacing */}
+        <div className="flex flex-col items-center">
           <img 
             ref={logoRef}
             id="company-logo"
             src={logoUrl} 
             alt="Company Logo"
-            className="object-contain mb-0" 
-            style={{ width: '240px', height: 'auto', display: 'block', marginBottom: 0 }}
+            className="object-contain" 
+            style={{ width: '240px', height: 'auto', display: 'block', marginBottom: '8px' }}
             crossOrigin="anonymous"
             onLoad={() => {
               console.log("Logo loaded in DOM:", logoUrl);
@@ -104,3 +104,4 @@ export function QuoteDocumentHeader({
     </div>
   );
 }
+

@@ -25,11 +25,12 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
     logoElement.src = newLogo;
     logoElement.crossOrigin = "anonymous";
     
-    // Ensure logo is displayed with correct dimensions
+    // Ensure logo is displayed with correct dimensions and spacing
     logoElement.style.display = 'block';
     logoElement.style.visibility = 'visible';
     logoElement.style.width = '250px';
     logoElement.style.height = 'auto';
+    logoElement.style.marginBottom = '8px'; // Add spacing below logo
     
     // Wait for logo to load
     await new Promise<void>((resolve) => {
@@ -70,12 +71,6 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
   element.style.width = '100%';
   element.style.maxWidth = '830px'; // Wider content area for PDF
   
-  // Reduce header spacing specifically
-  const headerElement = element.querySelector('.flex.flex-col.md\\:flex-row.justify-between.items-start.mb-2');
-  if (headerElement instanceof HTMLElement) {
-    headerElement.style.marginBottom = '5px';
-  }
-  
   console.log("PDF Generator: Applied layout preservation settings");
 
   // Create canvas from the element with maximum compatibility settings
@@ -98,6 +93,7 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
         clonedLogo.style.visibility = 'visible';
         clonedLogo.style.width = '250px';
         clonedLogo.style.height = 'auto';
+        clonedLogo.style.marginBottom = '8px'; // Add spacing below logo
         console.log("Set new logo in cloned document");
       }
       
@@ -106,13 +102,6 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
       if (docElement) {
         docElement.style.width = '100%';
         docElement.style.maxWidth = '830px';
-        
-        // Reduce header whitespace specifically
-        const headerElement = docElement.querySelector('.flex.flex-col.md\\:flex-row.justify-between.items-start.mb-2');
-        if (headerElement instanceof HTMLElement) {
-          headerElement.style.marginBottom = '5px';
-        }
-        
         console.log("Applied proper spacing to cloned document");
       }
     }
@@ -168,3 +157,4 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
   pdf.save(`${fileName}.pdf`);
   console.log("PDF Generator: PDF saved successfully");
 }
+
