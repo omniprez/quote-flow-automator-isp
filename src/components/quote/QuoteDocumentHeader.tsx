@@ -14,10 +14,10 @@ interface QuoteDocumentHeaderProps {
 export function QuoteDocumentHeader({
   quoteData,
   companyLogo = "/placeholder.svg",
-  companyName = "ISP Services Ltd",
-  companyAddress = "Ebene CyberCity\nEbene, Mauritius",
-  companyContact = "+230 123 4567",
-  companyEmail = "sales@ispservices.mu",
+  companyName = "Rogers Capital Technology Services Ltd",
+  companyAddress = "5, President John Kennedy Street\nPort Louis, Republic of Mauritius",
+  companyContact = "+230 211 7801",
+  companyEmail = "mcs_sales@rogerscapital.mu",
   primaryColor = "#000",
 }: QuoteDocumentHeaderProps) {
   // Custom style for primary color elements
@@ -28,11 +28,8 @@ export function QuoteDocumentHeader({
   return (
     <div className="flex flex-col md:flex-row justify-between items-start mb-8">
       <div>
-        <h1 className="text-3xl font-bold mb-1" style={headerStyle}>QUOTE</h1>
-        <p className="text-lg">#{quoteData.quote_number}</p>
-        <p className="text-sm text-muted-foreground mt-1">
-          Date: {new Date(quoteData.quote_date || quoteData.created_at).toLocaleDateString()}
-        </p>
+        {/* Removed QUOTE heading and quote number */}
+        {/* Removed date display */}
         {quoteData.expiration_date && (
           <p className="text-sm text-muted-foreground">
             Valid until: {new Date(quoteData.expiration_date).toLocaleDateString()}

@@ -31,7 +31,7 @@ export function QuoteDocument({
   featuresData = [],
   companyLogo = "/placeholder.svg",
   companyName = "Rogers Capital Technology Services Ltd",
-  companyAddress = "5, President John Kenney Street\nPort Louis, Mauritius",
+  companyAddress = "5, President John Kennedy Street\nPort Louis, Republic of Mauritius",
   companyContact = "+230 211 7801",
   companyEmail = "mcs_sales@rogerscapital.mu",
   primaryColor = "#000",
