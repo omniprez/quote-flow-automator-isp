@@ -1,7 +1,6 @@
 
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent } from "@/components/ui/card";
-import { useState, useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { QuoteDocumentHeader } from "./QuoteDocumentHeader";
 import { CustomerServiceDetails } from "./CustomerServiceDetails";
 import { QuoteSummaryTable } from "./QuoteSummaryTable";
@@ -36,9 +35,30 @@ export function QuoteDocument({
   companyEmail = "mcs_sales@rogerscapital.mu",
   primaryColor = "#000",
 }: QuoteDocumentProps) {
-  // Add a useEffect to log when the component renders and if it has a logo
+  const logoRef = useRef<HTMLImageElement>(null);
+  
+  // Add a useEffect to handle logo loading and debugging
   useEffect(() => {
     console.log("QuoteDocument rendered with logo path:", companyLogo);
+    
+    // Verify that the logo is loaded correctly
+    if (logoRef.current) {
+      const logoElement = logoRef.current;
+      
+      if (logoElement.complete) {
+        console.log("Logo loaded in DOM:", logoElement.src);
+      }
+      
+      logoElement.onload = () => {
+        console.log("Logo loaded successfully:", logoElement.src);
+      };
+      
+      logoElement.onerror = (e) => {
+        console.error("Failed to load logo:", logoElement.src, e);
+        // Fallback to default logo if loading fails
+        logoElement.src = "/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png";
+      };
+    }
   }, [companyLogo]);
 
   if (!quoteData || !customerData) {
@@ -47,7 +67,7 @@ export function QuoteDocument({
 
   return (
     <div className="p-8 max-w-4xl mx-auto bg-white">
-      {/* Header */}
+      {/* Pass logo reference to header */}
       <QuoteDocumentHeader
         quoteData={quoteData}
         companyLogo={companyLogo}
@@ -56,6 +76,7 @@ export function QuoteDocument({
         companyContact={companyContact}
         companyEmail={companyEmail}
         primaryColor={primaryColor}
+        logoRef={logoRef}
       />
 
       <Separator className="my-6" style={{backgroundColor: primaryColor}} />

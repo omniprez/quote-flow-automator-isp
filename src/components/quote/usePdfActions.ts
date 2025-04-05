@@ -11,42 +11,51 @@ export function usePdfActions() {
       setIsGeneratingPdf(true);
       console.log("Starting PDF generation for quote:", quoteNumber || quoteId);
       
-      // Ensure all images are loaded before generating PDF
-      const logoElement = document.querySelector('#quote-document img');
-      if (logoElement) {
-        console.log("Logo element found in the DOM:", logoElement);
-      } else {
-        console.warn("Logo element not found in the DOM before PDF generation");
-      }
+      // Force all images to be loaded before generating PDF
+      const allImages = document.querySelectorAll('#quote-document img');
+      console.log(`Found ${allImages.length} images in the document to preload`);
       
-      // Preload logo image with absolute URL
-      const preloadLogo = (logoUrl: string) => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          // Convert relative URL to absolute URL if needed
-          const absoluteUrl = logoUrl.startsWith('http') ? logoUrl : window.location.origin + logoUrl;
-          img.src = absoluteUrl;
-          
-          img.onload = () => {
-            console.log("Logo preloaded successfully:", absoluteUrl);
-            resolve(true);
-          };
-          img.onerror = (e) => {
-            console.error("Failed to preload logo:", absoluteUrl, e);
-            // Resolve anyway to continue the process
-            resolve(false);
-          };
+      // Preload all images with absolute URL
+      const preloadImages = async () => {
+        const preloadPromises = Array.from(allImages).map((imgElement) => {
+          return new Promise((resolve) => {
+            const img = new Image();
+            const imgSrc = (imgElement as HTMLImageElement).src;
+            
+            // If image is already loaded, resolve immediately
+            if ((imgElement as HTMLImageElement).complete) {
+              console.log("Image already loaded:", imgSrc);
+              resolve(true);
+              return;
+            }
+            
+            img.src = imgSrc;
+            img.crossOrigin = "anonymous";
+            
+            img.onload = () => {
+              console.log("Image preloaded successfully:", imgSrc);
+              resolve(true);
+            };
+            img.onerror = (e) => {
+              console.error("Failed to preload image:", imgSrc, e);
+              // Try with a fallback logo if it's the company logo
+              if (imgElement.id === 'company-logo') {
+                const fallbackLogo = '/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png';
+                console.log("Using fallback logo:", fallbackLogo);
+                (imgElement as HTMLImageElement).src = fallbackLogo;
+              }
+              resolve(false);
+            };
+          });
         });
+        
+        return Promise.all(preloadPromises);
       };
       
-      // Get logo URL from the DOM
-      const logoSrc = logoElement ? (logoElement as HTMLImageElement).src : '/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png';
+      await preloadImages();
       
-      // Preload the logo and wait a bit to ensure rendering
-      await preloadLogo(logoSrc);
-      
-      // Small delay to ensure everything is rendered
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // More reliable delay to ensure all DOM changes are applied
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       await generatePdf("quote-document", `Quote-${quoteNumber || quoteId}`);
       toast.success("Quote PDF downloaded successfully");

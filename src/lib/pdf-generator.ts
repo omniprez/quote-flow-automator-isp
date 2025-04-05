@@ -22,29 +22,31 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
     allowTaint: true, // Allow cross-origin images to taint the canvas
     logging: true, // Enable logging for debugging
     backgroundColor: "#ffffff",
-    imageTimeout: 15000, // Increase timeout for image loading
+    imageTimeout: 30000, // Increase timeout for image loading
     onclone: (document) => {
-      // Make sure all images in the cloned document have proper source attributes
+      // Verify all images in the cloned document
       const images = document.querySelectorAll('img');
       console.log(`Found ${images.length} images in the document`);
       
       images.forEach((img, index) => {
-        // Check if image has valid src
-        if (!img.src || img.src === 'about:blank' || img.src === window.location.href) {
-          console.warn(`Image #${index} has invalid src:`, img.src);
+        // Check if image has valid src and is loaded
+        if (!img.complete || !img.src || img.src === 'about:blank' || img.src === window.location.href) {
+          console.warn(`Image #${index} has issues:`, img.src);
           
-          // Try to fix it by using the original src attribute if data-src exists
+          // Try to fix it using alternative sources
           const dataSrc = img.getAttribute('data-src');
+          const alt = img.getAttribute('alt') || 'company logo';
+          
           if (dataSrc) {
             img.src = dataSrc;
             console.log(`Fixed image #${index} src with data-src:`, dataSrc);
-          } else {
-            // Fallback to a known working logo
-            img.src = window.location.origin + '/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png';
-            console.log(`Applied fallback image src to image #${index}`);
+          } else if (alt.includes('logo') || img.id === 'company-logo') {
+            // Use known working logo for company logo
+            img.src = '/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png';
+            console.log(`Applied fallback image for ${alt}`);
           }
         } else {
-          console.log(`Image #${index} src looks valid:`, img.src);
+          console.log(`Image #${index} src is valid and loaded:`, img.src);
         }
       });
     }
