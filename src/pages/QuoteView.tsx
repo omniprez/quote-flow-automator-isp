@@ -29,10 +29,10 @@ const QuoteView = () => {
   
   // Company branding states
   const [companyLogo, setCompanyLogo] = useState<string>("/placeholder.svg");
-  const [companyName, setCompanyName] = useState<string>("MCS Ltd");
-  const [companyAddress, setCompanyAddress] = useState<string>("Ebene CyberCity\nEbene, Mauritius");
-  const [companyContact, setCompanyContact] = useState<string>("+230 123 4567");
-  const [companyEmail, setCompanyEmail] = useState<string>("sales@mcs.mu");
+  const [companyName, setCompanyName] = useState<string>("Rogers Capital Technology Services Ltd");
+  const [companyAddress, setCompanyAddress] = useState<string>("5, President John Kennedy Street\nPort Louis, Republic of Mauritius");
+  const [companyContact, setCompanyContact] = useState<string>("+(230) 211 7801");
+  const [companyEmail, setCompanyEmail] = useState<string>("mcs_sales@rogerscapital.mu");
   const [primaryColor, setPrimaryColor] = useState<string>("#3b82f6");
 
   // Template states
@@ -54,6 +54,17 @@ const QuoteView = () => {
       } catch (e) {
         console.error("Error parsing company settings:", e);
       }
+    } else {
+      // Save default settings to localStorage if none exist
+      const defaultSettings = {
+        companyLogo: "/placeholder.svg",
+        companyName: "Rogers Capital Technology Services Ltd",
+        companyAddress: "5, President John Kennedy Street\nPort Louis, Republic of Mauritius",
+        companyContact: "+(230) 211 7801",
+        companyEmail: "mcs_sales@rogerscapital.mu",
+        primaryColor: "#3b82f6"
+      };
+      localStorage.setItem('companySettings', JSON.stringify(defaultSettings));
     }
     
     // Load saved templates from localStorage
