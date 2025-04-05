@@ -1,6 +1,6 @@
 
 import { formatCurrency } from "@/lib/formatters";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Ref } from "react";
 
 interface QuoteDocumentHeaderProps {
   quoteData: any;
@@ -10,6 +10,7 @@ interface QuoteDocumentHeaderProps {
   companyContact?: string;
   companyEmail?: string;
   primaryColor?: string;
+  logoRef?: Ref<HTMLImageElement>;
 }
 
 export function QuoteDocumentHeader({
@@ -20,6 +21,7 @@ export function QuoteDocumentHeader({
   companyContact = "+(230) 211 7801",
   companyEmail = "mcs_sales@rogerscapital.mu",
   primaryColor = "#000",
+  logoRef
 }: QuoteDocumentHeaderProps) {
   // State to track if the logo is loaded
   const [logoLoaded, setLogoLoaded] = useState(false);
@@ -79,6 +81,7 @@ export function QuoteDocumentHeader({
         {logoUrl && (
           <div className="h-16 mb-2" style={{ minHeight: '64px', minWidth: '64px' }}>
             <img 
+              ref={logoRef}
               src={logoUrl} 
               alt={companyName}
               className="h-16 mb-2 object-contain" 

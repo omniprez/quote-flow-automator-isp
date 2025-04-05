@@ -51,6 +51,7 @@ export function QuoteDocument({
       
       logoElement.onload = () => {
         console.log("Logo loaded successfully:", logoElement.src);
+        console.log("Logo verified and loaded:", logoElement.src);
       };
       
       logoElement.onerror = (e) => {

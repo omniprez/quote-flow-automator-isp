@@ -55,7 +55,7 @@ export function usePdfActions() {
       await preloadImages();
       
       // More reliable delay to ensure all DOM changes are applied
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       await generatePdf("quote-document", `Quote-${quoteNumber || quoteId}`);
       toast.success("Quote PDF downloaded successfully");
