@@ -59,7 +59,7 @@ export function QuoteDocumentHeader({
   }, []);
 
   return (
-    <div className="flex flex-col md:flex-row justify-between items-start mb-2">
+    <div className="flex flex-col md:flex-row justify-between items-start mb-0">
       <div>
         {/* Left side is empty now that we've removed QUOTE, quote number and date */}
         {quoteData.expiration_date && (

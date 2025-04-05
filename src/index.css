@@ -107,6 +107,44 @@
   }
 }
 
+/* PDF generation specific styles */
+.pdf-generation-mode {
+  width: 100% !important;
+  max-width: 830px !important;
+  line-height: normal !important;
+}
+
+.pdf-generation-mode p {
+  margin-bottom: 0.5em !important;
+  line-height: 1.4 !important;
+}
+
+.pdf-generation-mode table td, 
+.pdf-generation-mode table th {
+  padding-top: 0.5em !important;
+  padding-bottom: 0.5em !important;
+  line-height: 1.4 !important;
+}
+
+/* Print specific styling */
+@media print {
+  body {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  #quote-document {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  #quote-document p,
+  #quote-document td,
+  #quote-document th {
+    line-height: 1.4 !important;
+  }
+}
+
 /* Custom button animations */
 .btn-hover-effect {
   @apply transition-all duration-300 transform hover:scale-105;

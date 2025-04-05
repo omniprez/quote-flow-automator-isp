@@ -15,7 +15,7 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
     throw new Error(`Element with ID ${elementId} not found`);
   }
   
-  console.log("PDF Generator: Starting compression for single-page fit");
+  console.log("PDF Generator: Starting PDF generation with proper spacing");
 
   // Critical: Force the new logo right before generating
   const logoElement = element.querySelector('#company-logo') as HTMLImageElement;
@@ -48,39 +48,35 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
     console.warn("No logo element found during final check");
   }
 
-  // Compress the page and font size for PDF
-  const originalFontSize = window.getComputedStyle(element).fontSize;
-  element.style.fontSize = '0.85em';
+  // Apply better spacing preservation for PDF
+  // Store original styles
+  const originalStyles = new Map();
   
-  // Store original padding
-  const originalPadding = window.getComputedStyle(element).padding;
-  element.style.padding = '10px';
-  
-  console.log("PDF Generator: Applying aggressive compression to fit on single page");
-  
-  // Apply minimum height to make content more compact
+  // Save original styles for restoration later
   element.querySelectorAll('div, p, h2, h3, td, th').forEach(el => {
     if (el instanceof HTMLElement) {
-      // Reduce margins and paddings
-      if (window.getComputedStyle(el).marginBottom) {
-        el.style.marginBottom = '2px';
-      }
-      if (window.getComputedStyle(el).marginTop) {
-        el.style.marginTop = '2px';
-      }
-      if (window.getComputedStyle(el).paddingBottom) {
-        el.style.paddingBottom = '2px';
-      }
-      if (window.getComputedStyle(el).paddingTop) {
-        el.style.paddingTop = '2px';
-      }
-      
-      // Reduce line heights
-      if (el.tagName === 'P' || el.tagName === 'TD') {
-        el.style.lineHeight = '1.1';
-      }
+      originalStyles.set(el, {
+        fontSize: el.style.fontSize,
+        lineHeight: el.style.lineHeight,
+        marginBottom: el.style.marginBottom,
+        marginTop: el.style.marginTop,
+        paddingBottom: el.style.paddingBottom,
+        paddingTop: el.style.paddingTop
+      });
     }
   });
+  
+  // Apply proper spacing that preserves the layout while still fitting on page
+  element.style.width = '100%';
+  element.style.maxWidth = '830px'; // Wider content area for PDF
+  
+  // Reduce header spacing specifically
+  const headerElement = element.querySelector('.flex.flex-col.md\\:flex-row.justify-between.items-start.mb-2');
+  if (headerElement instanceof HTMLElement) {
+    headerElement.style.marginBottom = '5px';
+  }
+  
+  console.log("PDF Generator: Applied layout preservation settings");
 
   // Create canvas from the element with maximum compatibility settings
   console.log("Starting html2canvas conversion with logo status:", logoElement?.complete);
@@ -91,6 +87,7 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
     logging: true, // Enable logging for debugging
     backgroundColor: "#ffffff",
     imageTimeout: 0, // No timeout for image loading
+    width: 830, // Fixed width to match A4 proportions better
     onclone: (clonedDoc) => {
       // Final attempt to fix logo in the cloned document that will be rendered
       const clonedLogo = clonedDoc.querySelector('#company-logo') as HTMLImageElement;
@@ -104,39 +101,39 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
         console.log("Set new logo in cloned document");
       }
       
-      // Compress cloned document further to fit on one page
+      // Better spacing in cloned document
       const docElement = clonedDoc.getElementById(elementId);
       if (docElement) {
-        docElement.style.fontSize = '0.85em';
-        docElement.style.padding = '10px';
+        docElement.style.width = '100%';
+        docElement.style.maxWidth = '830px';
         
-        docElement.querySelectorAll('div, p, h2, h3, td, th').forEach(el => {
-          if (el instanceof HTMLElement) {
-            // Reduce margins and paddings
-            el.style.marginBottom = '2px';
-            el.style.marginTop = '2px';
-            el.style.paddingBottom = '2px';
-            el.style.paddingTop = '2px';
-            
-            // Reduce line heights
-            if (el.tagName === 'P' || el.tagName === 'TD') {
-              el.style.lineHeight = '1.1';
-            }
-          }
-        });
+        // Reduce header whitespace specifically
+        const headerElement = docElement.querySelector('.flex.flex-col.md\\:flex-row.justify-between.items-start.mb-2');
+        if (headerElement instanceof HTMLElement) {
+          headerElement.style.marginBottom = '5px';
+        }
         
-        console.log("Applied maximum compression to cloned document");
+        console.log("Applied proper spacing to cloned document");
       }
     }
   });
   
-  // Restore original font size and padding after capture
-  element.style.fontSize = originalFontSize;
-  element.style.padding = originalPadding;
+  // Restore original styles after capture
+  element.querySelectorAll('div, p, h2, h3, td, th').forEach(el => {
+    if (el instanceof HTMLElement && originalStyles.has(el)) {
+      const styles = originalStyles.get(el);
+      el.style.fontSize = styles.fontSize;
+      el.style.lineHeight = styles.lineHeight;
+      el.style.marginBottom = styles.marginBottom;
+      el.style.marginTop = styles.marginTop;
+      el.style.paddingBottom = styles.paddingBottom;
+      el.style.paddingTop = styles.paddingTop;
+    }
+  });
   
-  console.log("PDF Generator: Canvas generated, creating PDF with compressed settings");
+  console.log("PDF Generator: Canvas generated, creating PDF with proper spacing");
 
-  // Convert canvas to PDF
+  // Convert canvas to PDF with proper dimensions
   const imgData = canvas.toDataURL("image/png");
   const pdf = new jsPDF({
     orientation: "portrait",
@@ -151,7 +148,7 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
   let heightLeft = imgHeight;
   let position = 0;
 
-  // Compress content to try to fit on a single page
+  // Add content with proper spacing
   pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
   heightLeft -= pageHeight;
   
