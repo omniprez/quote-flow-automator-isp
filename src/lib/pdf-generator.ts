@@ -15,6 +15,30 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
     throw new Error(`Element with ID ${elementId} not found`);
   }
 
+  // Ensure all images are loaded before generating the PDF
+  const allImages = element.querySelectorAll('img');
+  console.log(`Total images found: ${allImages.length}`);
+  
+  // Verify all images are loaded, especially the company logo
+  const verifyImagesPromise = new Promise<void>((resolve) => {
+    const companyLogo = element.querySelector('#company-logo') as HTMLImageElement;
+    if (companyLogo) {
+      // If the company logo isn't loaded, try the fallback
+      if (!companyLogo.complete || companyLogo.naturalWidth === 0) {
+        console.warn("Company logo not loaded properly, using fallback");
+        companyLogo.src = '/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png';
+        // Wait for the fallback to load or timeout after 1 second
+        setTimeout(() => resolve(), 1000);
+      } else {
+        resolve();
+      }
+    } else {
+      resolve();
+    }
+  });
+  
+  await verifyImagesPromise;
+
   // Create canvas from the element
   const canvas = await html2canvas(element, {
     scale: 2, // Higher resolution

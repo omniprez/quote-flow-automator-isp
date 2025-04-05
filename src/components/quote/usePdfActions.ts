@@ -22,6 +22,12 @@ export function usePdfActions() {
             const img = new Image();
             const imgSrc = (imgElement as HTMLImageElement).src;
             
+            // Set the company logo ID directly on the element for easier identification
+            if (imgSrc.includes('lovable-uploads') || imgElement.id === 'company-logo' || 
+                (imgElement as HTMLImageElement).alt === 'Company Logo') {
+              imgElement.id = 'company-logo';
+            }
+            
             // If image is already loaded, resolve immediately
             if ((imgElement as HTMLImageElement).complete) {
               console.log("Image already loaded:", imgSrc);
@@ -39,7 +45,8 @@ export function usePdfActions() {
             img.onerror = (e) => {
               console.error("Failed to preload image:", imgSrc, e);
               // Try with a fallback logo if it's the company logo
-              if (imgElement.id === 'company-logo') {
+              if (imgElement.id === 'company-logo' || 
+                  (imgElement as HTMLImageElement).alt === 'Company Logo') {
                 const fallbackLogo = '/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png';
                 console.log("Using fallback logo:", fallbackLogo);
                 (imgElement as HTMLImageElement).src = fallbackLogo;
@@ -55,7 +62,16 @@ export function usePdfActions() {
       await preloadImages();
       
       // More reliable delay to ensure all DOM changes are applied
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      
+      // Make sure the logo is properly loaded before capturing
+      const logoImg = document.querySelector('#company-logo');
+      if (logoImg && !(logoImg as HTMLImageElement).complete) {
+        console.log("Company logo not loaded yet, forcing fallback");
+        (logoImg as HTMLImageElement).src = '/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png';
+        // Extra time for fallback to load
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
       
       await generatePdf("quote-document", `Quote-${quoteNumber || quoteId}`);
       toast.success("Quote PDF downloaded successfully");

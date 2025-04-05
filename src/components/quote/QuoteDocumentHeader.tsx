@@ -82,20 +82,26 @@ export function QuoteDocumentHeader({
           <div className="h-16 mb-2" style={{ minHeight: '64px', minWidth: '64px' }}>
             <img 
               ref={logoRef}
+              id="company-logo"
               src={logoUrl} 
-              alt={companyName}
+              alt="Company Logo"
               className="h-16 mb-2 object-contain" 
               style={{ maxWidth: '240px' }}
+              crossOrigin="anonymous"
               data-src={logoUrl} // Backup source attribute
-              onLoad={() => console.log("Logo loaded in DOM:", logoUrl)}
+              onLoad={() => {
+                console.log("Logo loaded in DOM:", logoUrl);
+                setLogoLoaded(true);
+                setLogoError(false);
+              }}
               onError={(e) => {
                 console.error("Logo failed to load in DOM:", e);
+                setLogoError(true);
                 // If this is the first error, try the backup
                 if (!logoError) {
                   const fallbackLogo = "/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png";
                   console.log("Switching to fallback logo:", fallbackLogo);
                   setLogoUrl(fallbackLogo);
-                  setLogoError(true);
                 } else {
                   // If we already tried a fallback, just hide the image
                   e.currentTarget.style.display = 'none';
