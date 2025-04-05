@@ -28,8 +28,7 @@ export function QuoteDocumentHeader({
   return (
     <div className="flex flex-col md:flex-row justify-between items-start mb-8">
       <div>
-        {/* Removed QUOTE heading and quote number */}
-        {/* Removed date display */}
+        {/* Left side is empty now that we've removed QUOTE, quote number and date */}
         {quoteData.expiration_date && (
           <p className="text-sm text-muted-foreground">
             Valid until: {new Date(quoteData.expiration_date).toLocaleDateString()}
