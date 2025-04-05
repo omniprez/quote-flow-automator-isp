@@ -9,6 +9,16 @@ export function usePdfActions() {
   const handleDownloadPdf = async (quoteNumber?: string, quoteId?: string) => {
     try {
       setIsGeneratingPdf(true);
+      console.log("Starting PDF generation for quote:", quoteNumber || quoteId);
+      
+      // Check if the company logo exists in the DOM before generating PDF
+      const logoElement = document.querySelector('#quote-document img');
+      if (logoElement) {
+        console.log("Logo element found in the DOM:", logoElement);
+      } else {
+        console.warn("Logo element not found in the DOM before PDF generation");
+      }
+      
       await generatePdf("quote-document", `Quote-${quoteNumber || quoteId}`);
       toast.success("Quote PDF downloaded successfully");
     } catch (error) {

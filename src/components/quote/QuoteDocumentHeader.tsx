@@ -42,6 +42,10 @@ export function QuoteDocumentHeader({
             alt={companyName} 
             className="h-16 mb-2 object-contain" 
             style={{ maxWidth: '240px' }}
+            onError={(e) => {
+              console.error("Logo failed to load:", e);
+              e.currentTarget.style.display = 'none';
+            }}
           />
         )}
         <h2 className="font-bold text-xl">{companyName}</h2>

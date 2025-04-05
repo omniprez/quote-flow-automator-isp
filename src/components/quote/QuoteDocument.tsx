@@ -1,7 +1,7 @@
 
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QuoteDocumentHeader } from "./QuoteDocumentHeader";
 import { CustomerServiceDetails } from "./CustomerServiceDetails";
 import { QuoteSummaryTable } from "./QuoteSummaryTable";
@@ -29,13 +29,18 @@ export function QuoteDocument({
   serviceData,
   bandwidthData,
   featuresData = [],
-  companyLogo = "/lovable-uploads/23117b0f-f2c2-44b0-a01f-0288914bd068.png",
+  companyLogo = "/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png",
   companyName = "Rogers Capital Technology Services Ltd",
   companyAddress = "5, President John Kennedy Street\nPort Louis, Republic of Mauritius",
   companyContact = "+(230) 211 7801",
   companyEmail = "mcs_sales@rogerscapital.mu",
   primaryColor = "#000",
 }: QuoteDocumentProps) {
+  // Add a useEffect to log when the component renders and if it has a logo
+  useEffect(() => {
+    console.log("QuoteDocument rendered with logo path:", companyLogo);
+  }, [companyLogo]);
+
   if (!quoteData || !customerData) {
     return <div>No data available</div>;
   }

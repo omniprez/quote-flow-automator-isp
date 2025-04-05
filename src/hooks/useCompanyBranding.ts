@@ -18,7 +18,7 @@ export interface BrandingTemplate {
 
 export function useCompanyBranding() {
   // Company branding states
-  const [companyLogo, setCompanyLogo] = useState<string>("/lovable-uploads/23117b0f-f2c2-44b0-a01f-0288914bd068.png");
+  const [companyLogo, setCompanyLogo] = useState<string>("/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png");
   const [companyName, setCompanyName] = useState<string>("Rogers Capital Technology Services Ltd");
   const [companyAddress, setCompanyAddress] = useState<string>("5, President John Kennedy Street\nPort Louis, Republic of Mauritius");
   const [companyContact, setCompanyContact] = useState<string>("+(230) 211 7801");
@@ -47,7 +47,7 @@ export function useCompanyBranding() {
     } else {
       // Save default settings to localStorage if none exist
       const defaultSettings = {
-        companyLogo: "/lovable-uploads/23117b0f-f2c2-44b0-a01f-0288914bd068.png",
+        companyLogo: "/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png",
         companyName: "Rogers Capital Technology Services Ltd",
         companyAddress: "5, President John Kennedy Street\nPort Louis, Republic of Mauritius",
         companyContact: "+(230) 211 7801",
