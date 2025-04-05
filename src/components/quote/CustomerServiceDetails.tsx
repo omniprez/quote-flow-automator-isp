@@ -19,23 +19,25 @@ export function CustomerServiceDetails({
     color: primaryColor
   };
   
+  console.log("Rendering CustomerServiceDetails with compressed spacing");
+  
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
       <div>
-        <h3 className="font-bold mb-1 text-sm" style={headerStyle}>Customer</h3>
-        <p className="font-medium text-sm mb-0">{customerData.company_name}</p>
-        <p className="text-xs mb-0">Contact: {customerData.contact_name}</p>
-        <p className="text-xs mb-0">Email: {customerData.email}</p>
-        {customerData.phone && <p className="text-xs mb-0">Phone: {customerData.phone}</p>}
+        <h3 className="font-bold mb-0 text-sm" style={headerStyle}>Customer</h3>
+        <p className="font-medium text-sm mb-0 leading-tight">{customerData.company_name}</p>
+        <p className="text-xs mb-0 leading-tight">Contact: {customerData.contact_name}</p>
+        <p className="text-xs mb-0 leading-tight">Email: {customerData.email}</p>
+        {customerData.phone && <p className="text-xs mb-0 leading-tight">Phone: {customerData.phone}</p>}
         {customerData.address && (
           <>
-            <p className="mt-0 text-xs mb-0">{customerData.address}</p>
-            <p className="text-xs mb-0">{customerData.city}{customerData.city && customerData.country ? ", " : ""}{customerData.country}</p>
+            <p className="mt-0 text-xs mb-0 leading-tight">{customerData.address}</p>
+            <p className="text-xs mb-0 leading-tight">{customerData.city}{customerData.city && customerData.country ? ", " : ""}{customerData.country}</p>
           </>
         )}
       </div>
       <div>
-        <h3 className="font-bold mb-1 text-sm" style={headerStyle}>Service Details</h3>
+        <h3 className="font-bold mb-0 text-sm" style={headerStyle}>Service Details</h3>
         <table className="w-full text-xs">
           <tbody>
             <tr>

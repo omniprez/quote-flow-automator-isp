@@ -10,12 +10,24 @@ export function usePdfActions() {
     try {
       setIsGeneratingPdf(true);
       console.log("Starting PDF generation for quote:", quoteNumber || quoteId);
+      console.log("PDF generation timestamp:", new Date().toISOString());
       
       // Apply additional compression to document for PDF generation
       const quoteDocument = document.getElementById('quote-document');
       if (quoteDocument) {
         console.log("Applying document compression for PDF generation");
         quoteDocument.classList.add('pdf-generation-mode');
+        
+        // Additional CSS to further reduce whitespace
+        console.log("Applying additional spacing reduction");
+        quoteDocument.style.fontSize = '0.8em';
+        quoteDocument.style.lineHeight = '1.1';
+        quoteDocument.querySelectorAll('div, p, h2, h3, td, th').forEach(el => {
+          if (el instanceof HTMLElement) {
+            el.style.margin = '0';
+            el.style.padding = '0';
+          }
+        });
       }
       
       // Force all images to be loaded before generating PDF
@@ -65,6 +77,17 @@ export function usePdfActions() {
         console.log("All images are loaded and ready for PDF generation");
       }
       
+      // Additional compression - check document overall height before PDF generation
+      if (quoteDocument) {
+        const docHeight = quoteDocument.offsetHeight;
+        console.log("Document height before PDF generation:", docHeight, "pixels");
+        if (docHeight > 1000) {
+          console.log("Document is tall, applying extra compression");
+          quoteDocument.style.fontSize = '0.75em';
+          quoteDocument.style.lineHeight = '1';
+        }
+      }
+      
       // Generate PDF with all images properly loaded
       await generatePdf("quote-document", `Quote-${quoteNumber || quoteId}`);
       toast.success("Quote PDF downloaded successfully");
@@ -72,6 +95,15 @@ export function usePdfActions() {
       // Remove the compression class after PDF generation
       if (quoteDocument) {
         quoteDocument.classList.remove('pdf-generation-mode');
+        // Reset inline styles
+        quoteDocument.style.fontSize = '';
+        quoteDocument.style.lineHeight = '';
+        quoteDocument.querySelectorAll('div, p, h2, h3, td, th').forEach(el => {
+          if (el instanceof HTMLElement) {
+            el.style.margin = '';
+            el.style.padding = '';
+          }
+        });
       }
     } catch (error) {
       console.error("Error generating PDF:", error);
@@ -81,9 +113,13 @@ export function usePdfActions() {
       const quoteDocument = document.getElementById('quote-document');
       if (quoteDocument) {
         quoteDocument.classList.remove('pdf-generation-mode');
+        // Reset inline styles
+        quoteDocument.style.fontSize = '';
+        quoteDocument.style.lineHeight = '';
       }
     } finally {
       setIsGeneratingPdf(false);
+      console.log("PDF generation process completed at:", new Date().toISOString());
     }
   };
 
