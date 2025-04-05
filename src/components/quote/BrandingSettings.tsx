@@ -2,6 +2,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useEffect, useState } from "react";
 
 interface BrandingSettingsProps {
   companyLogo: string;
@@ -32,6 +33,13 @@ export function BrandingSettings({
   onCompanyEmailChange,
   onPrimaryColorChange
 }: BrandingSettingsProps) {
+  const [logoError, setLogoError] = useState(false);
+  
+  // Reset logo error state when companyLogo changes
+  useEffect(() => {
+    setLogoError(false);
+  }, [companyLogo]);
+  
   return (
     <div className="border rounded-md p-4">
       <h3 className="text-md font-medium mb-2">Branding Settings</h3>
@@ -40,11 +48,23 @@ export function BrandingSettings({
           <Label htmlFor="logo">Company Logo</Label>
           <div className="flex items-center gap-4">
             {companyLogo && (
-              <img 
-                src={companyLogo} 
-                alt="Company Logo" 
-                className="h-12 w-auto object-contain"
-              />
+              <div className="relative h-12 w-24 flex items-center justify-center bg-gray-100 rounded">
+                <img 
+                  src={companyLogo} 
+                  alt="Company Logo" 
+                  className="h-12 max-w-full object-contain"
+                  onError={(e) => {
+                    console.error("Logo failed to load in settings:", e);
+                    setLogoError(true);
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+                {logoError && (
+                  <div className="absolute inset-0 flex items-center justify-center text-xs text-red-500">
+                    Logo error
+                  </div>
+                )}
+              </div>
             )}
             <Input
               id="logo"
@@ -53,6 +73,9 @@ export function BrandingSettings({
               onChange={onLogoChange}
             />
           </div>
+          <p className="text-xs text-muted-foreground">
+            Recommended size: 240px × 64px. Use PNG or JPEG format.
+          </p>
         </div>
         <div className="grid gap-2">
           <Label htmlFor="companyName">Company Name</Label>

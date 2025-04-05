@@ -19,8 +19,35 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
   const canvas = await html2canvas(element, {
     scale: 2, // Higher resolution
     useCORS: true, // Allow loading images from other domains
-    logging: false,
-    backgroundColor: "#ffffff"
+    allowTaint: true, // Allow cross-origin images to taint the canvas
+    logging: true, // Enable logging for debugging
+    backgroundColor: "#ffffff",
+    imageTimeout: 15000, // Increase timeout for image loading
+    onclone: (document) => {
+      // Make sure all images in the cloned document have proper source attributes
+      const images = document.querySelectorAll('img');
+      console.log(`Found ${images.length} images in the document`);
+      
+      images.forEach((img, index) => {
+        // Check if image has valid src
+        if (!img.src || img.src === 'about:blank' || img.src === window.location.href) {
+          console.warn(`Image #${index} has invalid src:`, img.src);
+          
+          // Try to fix it by using the original src attribute if data-src exists
+          const dataSrc = img.getAttribute('data-src');
+          if (dataSrc) {
+            img.src = dataSrc;
+            console.log(`Fixed image #${index} src with data-src:`, dataSrc);
+          } else {
+            // Fallback to a known working logo
+            img.src = window.location.origin + '/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png';
+            console.log(`Applied fallback image src to image #${index}`);
+          }
+        } else {
+          console.log(`Image #${index} src looks valid:`, img.src);
+        }
+      });
+    }
   });
 
   // Convert canvas to PDF
