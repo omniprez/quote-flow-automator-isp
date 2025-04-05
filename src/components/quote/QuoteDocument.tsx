@@ -7,6 +7,7 @@ import { QuoteSummaryTable } from "./QuoteSummaryTable";
 import { QuoteNotes } from "./QuoteNotes";
 import { TermsConditions } from "./TermsConditions";
 import { QuoteFooter } from "./QuoteFooter";
+import { RogersCapitalTemplate } from "./RogersCapitalTemplate";
 
 interface QuoteDocumentProps {
   quoteData: any;
@@ -20,6 +21,7 @@ interface QuoteDocumentProps {
   companyContact?: string;
   companyEmail?: string;
   primaryColor?: string;
+  useAlternateTemplate?: boolean;
 }
 
 export function QuoteDocument({ 
@@ -34,6 +36,7 @@ export function QuoteDocument({
   companyContact = "+(230) 211 7801",
   companyEmail = "mcs_sales@rogerscapital.mu",
   primaryColor = "#000",
+  useAlternateTemplate = false,
 }: QuoteDocumentProps) {
   const logoRef = useRef<HTMLImageElement>(null);
   
@@ -67,9 +70,28 @@ export function QuoteDocument({
     return <div>No data available</div>;
   }
 
+  // Use the Rogers Capital template if requested
+  if (useAlternateTemplate) {
+    return (
+      <RogersCapitalTemplate
+        quoteData={quoteData}
+        customerData={customerData}
+        serviceData={serviceData}
+        bandwidthData={bandwidthData}
+        featuresData={featuresData}
+        companyLogo={companyLogo}
+        companyName={companyName}
+        companyAddress={companyAddress}
+        companyContact={companyContact}
+        companyEmail={companyEmail}
+        primaryColor={primaryColor}
+      />
+    );
+  }
+
+  // Original template
   return (
     <div className="p-4 max-w-4xl mx-auto bg-white">
-      {/* Pass logo reference to header */}
       <QuoteDocumentHeader
         quoteData={quoteData}
         companyLogo={companyLogo}

@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Sheet } from "@/components/ui/sheet";
+import { useState } from "react";
 
 import { QuoteDocument } from "@/components/quote/QuoteDocument";
 import { QuoteHeader } from "@/components/quote/QuoteHeader";
@@ -11,9 +12,13 @@ import { BrandingSheet } from "@/components/quote/BrandingSheet";
 import { useQuoteData } from "@/hooks/useQuoteData";
 import { useCompanyBranding } from "@/hooks/useCompanyBranding";
 import { usePdfActions } from "@/components/quote/usePdfActions";
+import { Button } from "@/components/ui/button";
+import { LayoutTemplate } from "lucide-react";
 
 const QuoteView = () => {
   const { quoteId } = useParams();
+  const [useAlternateTemplate, setUseAlternateTemplate] = useState(false);
+  
   const { 
     isLoading, 
     error, 
@@ -85,6 +90,10 @@ const QuoteView = () => {
     await handleDownloadPdf(quoteData?.quote_number, quoteId);
   };
 
+  const toggleTemplate = () => {
+    setUseAlternateTemplate(!useAlternateTemplate);
+  };
+
   return (
     <div className="container mx-auto py-6 max-w-4xl">
       <div className="flex flex-col space-y-6">
@@ -93,6 +102,17 @@ const QuoteView = () => {
           isUpdatingStatus={false}
           onUpdateStatus={handleUpdateStatus}
         />
+        
+        <div className="flex flex-col md:flex-row gap-3 print:hidden">
+          <Button 
+            variant={useAlternateTemplate ? "default" : "outline"}
+            onClick={toggleTemplate}
+            className="flex-1"
+          >
+            <LayoutTemplate className="mr-2 h-4 w-4" />
+            {useAlternateTemplate ? "Using Rogers Capital Template" : "Switch to Rogers Capital Template"}
+          </Button>
+        </div>
         
         <QuoteActions
           isGeneratingPdf={isGeneratingPdf}
@@ -115,7 +135,8 @@ const QuoteView = () => {
             companyAddress={companyAddress}
             companyContact={companyContact}
             companyEmail={companyEmail}
-            primaryColor={primaryColor}
+            primaryColor={useAlternateTemplate ? "#003366" : primaryColor}
+            useAlternateTemplate={useAlternateTemplate}
           />
         </div>
       </div>
