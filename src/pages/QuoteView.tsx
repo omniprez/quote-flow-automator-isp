@@ -28,7 +28,7 @@ const QuoteView = () => {
   const { user } = useAuth();
   
   // Company branding states
-  const [companyLogo, setCompanyLogo] = useState<string>("/placeholder.svg");
+  const [companyLogo, setCompanyLogo] = useState<string>("/lovable-uploads/4ef83d86-9b81-4e3d-b16a-446ea5809713.png");
   const [companyName, setCompanyName] = useState<string>("Rogers Capital Technology Services Ltd");
   const [companyAddress, setCompanyAddress] = useState<string>("5, President John Kennedy Street\nPort Louis, Republic of Mauritius");
   const [companyContact, setCompanyContact] = useState<string>("+(230) 211 7801");
@@ -57,7 +57,7 @@ const QuoteView = () => {
     } else {
       // Save default settings to localStorage if none exist
       const defaultSettings = {
-        companyLogo: "/placeholder.svg",
+        companyLogo: "/lovable-uploads/4ef83d86-9b81-4e3d-b16a-446ea5809713.png",
         companyName: "Rogers Capital Technology Services Ltd",
         companyAddress: "5, President John Kennedy Street\nPort Louis, Republic of Mauritius",
         companyContact: "+(230) 211 7801",

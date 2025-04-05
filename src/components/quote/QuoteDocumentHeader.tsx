@@ -13,7 +13,7 @@ interface QuoteDocumentHeaderProps {
 
 export function QuoteDocumentHeader({
   quoteData,
-  companyLogo = "/placeholder.svg",
+  companyLogo = "/lovable-uploads/4ef83d86-9b81-4e3d-b16a-446ea5809713.png",
   companyName = "Rogers Capital Technology Services Ltd",
   companyAddress = "5, President John Kennedy Street\nPort Louis, Republic of Mauritius",
   companyContact = "+(230) 211 7801",
@@ -41,6 +41,7 @@ export function QuoteDocumentHeader({
             src={companyLogo} 
             alt={companyName} 
             className="h-16 mb-2 object-contain" 
+            style={{ maxWidth: '240px' }}
           />
         )}
         <h2 className="font-bold text-xl">{companyName}</h2>
