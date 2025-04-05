@@ -30,10 +30,10 @@ export function QuoteDocument({
   bandwidthData,
   featuresData = [],
   companyLogo = "/placeholder.svg",
-  companyName = "MCS Ltd",
-  companyAddress = "Ebene CyberCity\nEbene, Mauritius",
-  companyContact = "+230 123 4567",
-  companyEmail = "sales@mcs.mu",
+  companyName = "Rogers Capital Technology Services Ltd",
+  companyAddress = "5, President John Kennedy Street\nPort Louis, Republic of Mauritius",
+  companyContact = "+(230) 211 7801",
+  companyEmail = "mcs_sales@rogerscapital.mu",
   primaryColor = "#000",
 }: QuoteDocumentProps) {
   if (!quoteData || !customerData) {
