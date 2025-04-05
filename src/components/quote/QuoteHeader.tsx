@@ -13,7 +13,7 @@ import {
 interface QuoteHeaderProps {
   quoteData: any;
   isUpdatingStatus: boolean;
-  onUpdateStatus: (newStatus: string) => Promise<void>;
+  onUpdateStatus: (newStatus: string) => Promise<boolean | void>;
 }
 
 export function QuoteHeader({
