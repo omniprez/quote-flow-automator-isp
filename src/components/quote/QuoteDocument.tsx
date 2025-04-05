@@ -67,7 +67,7 @@ export function QuoteDocument({
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto bg-white">
+    <div className="p-6 max-w-4xl mx-auto bg-white">
       {/* Pass logo reference to header */}
       <QuoteDocumentHeader
         quoteData={quoteData}
@@ -80,7 +80,7 @@ export function QuoteDocument({
         logoRef={logoRef}
       />
 
-      <Separator className="my-6" style={{backgroundColor: primaryColor}} />
+      <Separator className="my-3" style={{backgroundColor: primaryColor}} />
 
       {/* Customer and Service Details */}
       <CustomerServiceDetails

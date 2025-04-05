@@ -46,6 +46,23 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
     console.warn("No logo element found during final check");
   }
 
+  // Compress the page and font size for PDF
+  const originalFontSize = window.getComputedStyle(element).fontSize;
+  element.style.fontSize = '0.9em';
+  
+  // Apply minimum height to make content more compact
+  element.querySelectorAll('div, p, h2, h3').forEach(el => {
+    if (el instanceof HTMLElement) {
+      // Reduce margins and paddings
+      if (window.getComputedStyle(el).marginBottom) {
+        el.style.marginBottom = '4px';
+      }
+      if (window.getComputedStyle(el).paddingBottom) {
+        el.style.paddingBottom = '4px';
+      }
+    }
+  });
+
   // Create canvas from the element with maximum compatibility settings
   console.log("Starting html2canvas conversion with logo status:", logoElement?.complete);
   const canvas = await html2canvas(element, {
@@ -67,8 +84,24 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
         clonedLogo.style.height = 'auto';
         console.log("Set new logo in cloned document");
       }
+      
+      // Compress cloned document further to fit on one page
+      const docElement = clonedDoc.getElementById(elementId);
+      if (docElement) {
+        docElement.style.fontSize = '0.9em';
+        docElement.querySelectorAll('div, p, h2, h3').forEach(el => {
+          if (el instanceof HTMLElement) {
+            // Reduce margins and paddings
+            el.style.marginBottom = '4px';
+            el.style.paddingBottom = '4px';
+          }
+        });
+      }
     }
   });
+  
+  // Restore original font size after capture
+  element.style.fontSize = originalFontSize;
 
   // Convert canvas to PDF
   const imgData = canvas.toDataURL("image/png");
@@ -76,6 +109,7 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
     orientation: "portrait",
     unit: "mm",
     format: "a4",
+    compress: true
   });
   
   const imgWidth = 210; // A4 width in mm
@@ -84,6 +118,7 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
   let heightLeft = imgHeight;
   let position = 0;
 
+  // Compress content to try to fit on a single page
   pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
   heightLeft -= pageHeight;
 
