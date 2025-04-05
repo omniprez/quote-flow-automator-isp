@@ -111,19 +111,36 @@
 .pdf-generation-mode {
   width: 100% !important;
   max-width: 830px !important;
-  line-height: normal !important;
+  line-height: 1.2 !important;
 }
 
 .pdf-generation-mode p {
-  margin-bottom: 0.5em !important;
-  line-height: 1.4 !important;
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
+  line-height: 1.2 !important;
+}
+
+.pdf-generation-mode h2 {
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
 }
 
 .pdf-generation-mode table td, 
 .pdf-generation-mode table th {
-  padding-top: 0.5em !important;
-  padding-bottom: 0.5em !important;
-  line-height: 1.4 !important;
+  padding-top: 0.3em !important;
+  padding-bottom: 0.3em !important;
+  line-height: 1.2 !important;
+}
+
+/* Specific spacing for logo and company header */
+.pdf-generation-mode #company-logo {
+  margin-bottom: 0 !important;
+  height: auto !important;
+  width: 240px !important;
+}
+
+.pdf-generation-mode .company-header-container {
+  margin-bottom: 0 !important;
 }
 
 /* Print specific styling */
@@ -141,7 +158,18 @@
   #quote-document p,
   #quote-document td,
   #quote-document th {
-    line-height: 1.4 !important;
+    line-height: 1.2 !important;
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  #quote-document h2 {
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+  }
+  
+  #company-logo {
+    margin-bottom: 0 !important;
   }
 }
 
