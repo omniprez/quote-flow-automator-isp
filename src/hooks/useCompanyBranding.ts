@@ -26,8 +26,8 @@ const preloadImage = (src: string): Promise<boolean> => {
   });
 };
 
-// Default logo path that we know works
-const DEFAULT_LOGO = "/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png";
+// New Rogers Capital logo path
+const DEFAULT_LOGO = "/lovable-uploads/22a2e78f-c2e3-4522-838b-ba6971d8cec9.png";
 
 export function useCompanyBranding() {
   // Company branding states
@@ -36,7 +36,7 @@ export function useCompanyBranding() {
   const [companyAddress, setCompanyAddress] = useState<string>("5, President John Kennedy Street\nPort Louis, Republic of Mauritius");
   const [companyContact, setCompanyContact] = useState<string>("+(230) 211 7801");
   const [companyEmail, setCompanyEmail] = useState<string>("mcs_sales@rogerscapital.mu");
-  const [primaryColor, setPrimaryColor] = useState<string>("#3b82f6");
+  const [primaryColor, setPrimaryColor] = useState<string>("#003087"); // Rogers Capital blue
   
   // Template states
   const [templateName, setTemplateName] = useState<string>("");

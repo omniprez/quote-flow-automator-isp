@@ -15,26 +15,28 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
     throw new Error(`Element with ID ${elementId} not found`);
   }
 
-  // Critical: Force the fallback logo one more time right before generating
+  // Critical: Force the new logo right before generating
   const logoElement = element.querySelector('#company-logo') as HTMLImageElement;
   if (logoElement) {
-    const fallbackLogo = '/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png';
-    console.log("Final verification - forcing fallback logo:", fallbackLogo);
-    logoElement.src = fallbackLogo;
+    const newLogo = '/lovable-uploads/22a2e78f-c2e3-4522-838b-ba6971d8cec9.png';
+    console.log("Final verification - forcing new Rogers Capital logo:", newLogo);
+    logoElement.src = newLogo;
     logoElement.crossOrigin = "anonymous";
     
-    // Ensure logo is displayed
+    // Ensure logo is displayed with correct dimensions
     logoElement.style.display = 'block';
     logoElement.style.visibility = 'visible';
+    logoElement.style.width = '250px';
+    logoElement.style.height = 'auto';
     
     // Wait for logo to load
     await new Promise<void>((resolve) => {
       const checkLoaded = () => {
         if (logoElement.complete) {
-          console.log("Fallback logo loaded successfully");
+          console.log("New logo loaded successfully");
           resolve();
         } else {
-          console.log("Waiting for fallback logo to load...");
+          console.log("Waiting for new logo to load...");
           setTimeout(checkLoaded, 500);
         }
       };
@@ -57,11 +59,13 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
       // Final attempt to fix logo in the cloned document that will be rendered
       const clonedLogo = clonedDoc.querySelector('#company-logo') as HTMLImageElement;
       if (clonedLogo) {
-        clonedLogo.src = '/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png';
+        clonedLogo.src = '/lovable-uploads/22a2e78f-c2e3-4522-838b-ba6971d8cec9.png';
         clonedLogo.crossOrigin = "anonymous";
         clonedLogo.style.display = 'block';
         clonedLogo.style.visibility = 'visible';
-        console.log("Set fallback logo in cloned document");
+        clonedLogo.style.width = '250px';
+        clonedLogo.style.height = 'auto';
+        console.log("Set new logo in cloned document");
       }
     }
   });

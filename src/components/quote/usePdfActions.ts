@@ -23,24 +23,26 @@ export function usePdfActions() {
         console.log("Marked image as company logo:", (img as HTMLImageElement).src);
       });
       
-      // Directly replace with known working fallback logo
-      // This ensures we don't rely on potentially problematic logo loading
+      // Directly replace with new Rogers Capital logo
       const logoElements = document.querySelectorAll('#company-logo');
       if (logoElements.length > 0) {
-        const fallbackLogo = '/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png';
-        console.log(`Using guaranteed working fallback logo for ${logoElements.length} logo elements`);
+        const newLogo = '/lovable-uploads/22a2e78f-c2e3-4522-838b-ba6971d8cec9.png';
+        console.log(`Using new Rogers Capital logo for ${logoElements.length} logo elements`);
         
         logoElements.forEach(logo => {
-          (logo as HTMLImageElement).src = fallbackLogo;
+          (logo as HTMLImageElement).src = newLogo;
           (logo as HTMLImageElement).crossOrigin = "anonymous";
-          console.log("Set fallback logo src:", fallbackLogo);
+          // Set the dimensions to ensure it's displayed correctly
+          (logo as HTMLImageElement).style.width = '250px';
+          (logo as HTMLImageElement).style.height = 'auto';
+          console.log("Set new logo src:", newLogo);
         });
       } else {
-        console.warn("No logo elements found to set fallback");
+        console.warn("No logo elements found to set");
       }
       
-      // Force a longer wait to ensure the fallback logo is loaded
-      console.log("Waiting for fallback logo to fully load...");
+      // Force a wait to ensure the logo is loaded
+      console.log("Waiting for logo to fully load...");
       await new Promise(resolve => setTimeout(resolve, 3000));
       
       // Final check for any images still loading

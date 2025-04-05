@@ -15,7 +15,7 @@ interface QuoteDocumentHeaderProps {
 
 export function QuoteDocumentHeader({
   quoteData,
-  companyLogo = "/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png",
+  companyLogo = "/lovable-uploads/22a2e78f-c2e3-4522-838b-ba6971d8cec9.png",
   companyName = "Rogers Capital Technology Services Ltd",
   companyAddress = "5, President John Kennedy Street\nPort Louis, Republic of Mauritius",
   companyContact = "+(230) 211 7801",
@@ -23,9 +23,9 @@ export function QuoteDocumentHeader({
   primaryColor = "#000",
   logoRef
 }: QuoteDocumentHeaderProps) {
-  // Always use the fallback logo since it's guaranteed to work
-  const fallbackLogo = "/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png";
-  const [logoUrl, setLogoUrl] = useState(fallbackLogo);
+  // Always use the new logo as default
+  const newLogo = "/lovable-uploads/22a2e78f-c2e3-4522-838b-ba6971d8cec9.png";
+  const [logoUrl, setLogoUrl] = useState(newLogo);
   const [logoLoaded, setLogoLoaded] = useState(false);
   const [logoError, setLogoError] = useState(false);
 
@@ -36,24 +36,24 @@ export function QuoteDocumentHeader({
 
   // Effect to handle logo loading
   useEffect(() => {
-    console.log("Setting fallback logo as guaranteed option");
-    setLogoUrl(fallbackLogo);
+    console.log("Setting new Rogers Capital logo");
+    setLogoUrl(newLogo);
     setLogoLoaded(false);
     setLogoError(false);
     
     // Preload the logo to ensure it's in browser cache
     const img = new Image();
-    img.src = fallbackLogo;
+    img.src = newLogo;
     img.crossOrigin = "anonymous";
     
     img.onload = () => {
-      console.log("Fallback logo preloaded successfully");
+      console.log("New logo preloaded successfully");
       setLogoLoaded(true);
       setLogoError(false);
     };
     
     img.onerror = () => {
-      console.error("Error loading fallback logo");
+      console.error("Error loading new logo");
       setLogoError(true);
     };
   }, []);
@@ -69,15 +69,15 @@ export function QuoteDocumentHeader({
         )}
       </div>
       <div className="mt-4 md:mt-0 text-right flex flex-col items-end">
-        {/* Always use the fallback logo to ensure consistency */}
-        <div className="h-16 mb-2" style={{ minHeight: '64px', minWidth: '64px' }}>
+        {/* Display the Rogers Capital logo with better sizing */}
+        <div className="mb-2" style={{ minHeight: '50px', width: '250px' }}>
           <img 
             ref={logoRef}
             id="company-logo"
             src={logoUrl} 
             alt="Company Logo"
-            className="h-16 mb-2 object-contain" 
-            style={{ maxWidth: '240px', display: 'block' }}
+            className="mb-2 object-contain" 
+            style={{ width: '250px', height: 'auto', display: 'block' }}
             crossOrigin="anonymous"
             onLoad={() => {
               console.log("Logo loaded in DOM:", logoUrl);
@@ -86,11 +86,11 @@ export function QuoteDocumentHeader({
             }}
             onError={(e) => {
               console.error("Logo failed to load in DOM:", e);
-              // Always revert to fallback on any error
-              if (logoUrl !== fallbackLogo) {
-                setLogoUrl(fallbackLogo);
+              // Always revert to new logo on any error
+              if (logoUrl !== newLogo) {
+                setLogoUrl(newLogo);
               } else {
-                // If the fallback itself fails, hide the image
+                // If the new logo itself fails, hide the image
                 e.currentTarget.style.display = 'none';
               }
             }}
