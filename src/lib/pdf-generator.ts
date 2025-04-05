@@ -15,64 +15,54 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
     throw new Error(`Element with ID ${elementId} not found`);
   }
 
-  // Ensure all images are loaded before generating the PDF
-  const allImages = element.querySelectorAll('img');
-  console.log(`Total images found: ${allImages.length}`);
-  
-  // Verify all images are loaded, especially the company logo
-  const verifyImagesPromise = new Promise<void>((resolve) => {
-    const companyLogo = element.querySelector('#company-logo') as HTMLImageElement;
-    if (companyLogo) {
-      // If the company logo isn't loaded, try the fallback
-      if (!companyLogo.complete || companyLogo.naturalWidth === 0) {
-        console.warn("Company logo not loaded properly, using fallback");
-        companyLogo.src = '/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png';
-        // Wait for the fallback to load or timeout after 1 second
-        setTimeout(() => resolve(), 1000);
-      } else {
-        resolve();
-      }
-    } else {
-      resolve();
-    }
-  });
-  
-  await verifyImagesPromise;
+  // Critical: Force the fallback logo one more time right before generating
+  const logoElement = element.querySelector('#company-logo') as HTMLImageElement;
+  if (logoElement) {
+    const fallbackLogo = '/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png';
+    console.log("Final verification - forcing fallback logo:", fallbackLogo);
+    logoElement.src = fallbackLogo;
+    logoElement.crossOrigin = "anonymous";
+    
+    // Ensure logo is displayed
+    logoElement.style.display = 'block';
+    logoElement.style.visibility = 'visible';
+    
+    // Wait for logo to load
+    await new Promise<void>((resolve) => {
+      const checkLoaded = () => {
+        if (logoElement.complete) {
+          console.log("Fallback logo loaded successfully");
+          resolve();
+        } else {
+          console.log("Waiting for fallback logo to load...");
+          setTimeout(checkLoaded, 500);
+        }
+      };
+      checkLoaded();
+    });
+  } else {
+    console.warn("No logo element found during final check");
+  }
 
-  // Create canvas from the element
+  // Create canvas from the element with maximum compatibility settings
+  console.log("Starting html2canvas conversion with logo status:", logoElement?.complete);
   const canvas = await html2canvas(element, {
     scale: 2, // Higher resolution
     useCORS: true, // Allow loading images from other domains
     allowTaint: true, // Allow cross-origin images to taint the canvas
     logging: true, // Enable logging for debugging
     backgroundColor: "#ffffff",
-    imageTimeout: 30000, // Increase timeout for image loading
-    onclone: (document) => {
-      // Verify all images in the cloned document
-      const images = document.querySelectorAll('img');
-      console.log(`Found ${images.length} images in the document`);
-      
-      images.forEach((img, index) => {
-        // Check if image has valid src and is loaded
-        if (!img.complete || !img.src || img.src === 'about:blank' || img.src === window.location.href) {
-          console.warn(`Image #${index} has issues:`, img.src);
-          
-          // Try to fix it using alternative sources
-          const dataSrc = img.getAttribute('data-src');
-          const alt = img.getAttribute('alt') || 'company logo';
-          
-          if (dataSrc) {
-            img.src = dataSrc;
-            console.log(`Fixed image #${index} src with data-src:`, dataSrc);
-          } else if (alt.includes('logo') || img.id === 'company-logo') {
-            // Use known working logo for company logo
-            img.src = '/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png';
-            console.log(`Applied fallback image for ${alt}`);
-          }
-        } else {
-          console.log(`Image #${index} src is valid and loaded:`, img.src);
-        }
-      });
+    imageTimeout: 0, // No timeout for image loading
+    onclone: (clonedDoc) => {
+      // Final attempt to fix logo in the cloned document that will be rendered
+      const clonedLogo = clonedDoc.querySelector('#company-logo') as HTMLImageElement;
+      if (clonedLogo) {
+        clonedLogo.src = '/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png';
+        clonedLogo.crossOrigin = "anonymous";
+        clonedLogo.style.display = 'block';
+        clonedLogo.style.visibility = 'visible';
+        console.log("Set fallback logo in cloned document");
+      }
     }
   });
 

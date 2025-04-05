@@ -15,64 +15,48 @@ export function usePdfActions() {
       const allImages = document.querySelectorAll('#quote-document img');
       console.log(`Found ${allImages.length} images in the document to preload`);
       
-      // Preload all images with absolute URL
-      const preloadImages = async () => {
-        const preloadPromises = Array.from(allImages).map((imgElement) => {
-          return new Promise((resolve) => {
-            const img = new Image();
-            const imgSrc = (imgElement as HTMLImageElement).src;
-            
-            // Set the company logo ID directly on the element for easier identification
-            if (imgSrc.includes('lovable-uploads') || imgElement.id === 'company-logo' || 
-                (imgElement as HTMLImageElement).alt === 'Company Logo') {
-              imgElement.id = 'company-logo';
-            }
-            
-            // If image is already loaded, resolve immediately
-            if ((imgElement as HTMLImageElement).complete) {
-              console.log("Image already loaded:", imgSrc);
-              resolve(true);
-              return;
-            }
-            
-            img.src = imgSrc;
-            img.crossOrigin = "anonymous";
-            
-            img.onload = () => {
-              console.log("Image preloaded successfully:", imgSrc);
-              resolve(true);
-            };
-            img.onerror = (e) => {
-              console.error("Failed to preload image:", imgSrc, e);
-              // Try with a fallback logo if it's the company logo
-              if (imgElement.id === 'company-logo' || 
-                  (imgElement as HTMLImageElement).alt === 'Company Logo') {
-                const fallbackLogo = '/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png';
-                console.log("Using fallback logo:", fallbackLogo);
-                (imgElement as HTMLImageElement).src = fallbackLogo;
-              }
-              resolve(false);
-            };
-          });
-        });
+      // Explicitly set logo ID to all potential logo images
+      const possibleLogos = document.querySelectorAll('#quote-document img[alt="Company Logo"], #quote-document img[class*="logo"]');
+      possibleLogos.forEach(img => {
+        img.id = 'company-logo';
+        (img as HTMLImageElement).crossOrigin = "anonymous";
+        console.log("Marked image as company logo:", (img as HTMLImageElement).src);
+      });
+      
+      // Directly replace with known working fallback logo
+      // This ensures we don't rely on potentially problematic logo loading
+      const logoElements = document.querySelectorAll('#company-logo');
+      if (logoElements.length > 0) {
+        const fallbackLogo = '/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png';
+        console.log(`Using guaranteed working fallback logo for ${logoElements.length} logo elements`);
         
-        return Promise.all(preloadPromises);
-      };
-      
-      await preloadImages();
-      
-      // More reliable delay to ensure all DOM changes are applied
-      await new Promise(resolve => setTimeout(resolve, 2500));
-      
-      // Make sure the logo is properly loaded before capturing
-      const logoImg = document.querySelector('#company-logo');
-      if (logoImg && !(logoImg as HTMLImageElement).complete) {
-        console.log("Company logo not loaded yet, forcing fallback");
-        (logoImg as HTMLImageElement).src = '/lovable-uploads/1b83d0bf-d1e0-4307-a20b-c1cae596873e.png';
-        // Extra time for fallback to load
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        logoElements.forEach(logo => {
+          (logo as HTMLImageElement).src = fallbackLogo;
+          (logo as HTMLImageElement).crossOrigin = "anonymous";
+          console.log("Set fallback logo src:", fallbackLogo);
+        });
+      } else {
+        console.warn("No logo elements found to set fallback");
       }
       
+      // Force a longer wait to ensure the fallback logo is loaded
+      console.log("Waiting for fallback logo to fully load...");
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Final check for any images still loading
+      const stillLoadingImages = Array.from(allImages).filter(img => 
+        !(img as HTMLImageElement).complete || (img as HTMLImageElement).naturalHeight === 0
+      );
+      
+      if (stillLoadingImages.length > 0) {
+        console.warn(`${stillLoadingImages.length} images still not loaded completely`);
+        // Force one final wait
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      } else {
+        console.log("All images are loaded and ready for PDF generation");
+      }
+      
+      // Generate PDF with all images properly loaded
       await generatePdf("quote-document", `Quote-${quoteNumber || quoteId}`);
       toast.success("Quote PDF downloaded successfully");
     } catch (error) {
