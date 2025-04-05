@@ -59,18 +59,18 @@ export function QuoteDocumentHeader({
   }, []);
 
   return (
-    <div className="flex flex-col md:flex-row justify-between items-start mb-4">
+    <div className="flex flex-col md:flex-row justify-between items-start mb-2">
       <div>
         {/* Left side is empty now that we've removed QUOTE, quote number and date */}
         {quoteData.expiration_date && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Valid until: {new Date(quoteData.expiration_date).toLocaleDateString()}
           </p>
         )}
       </div>
-      <div className="md:mt-0 text-right flex flex-col items-end">
-        {/* Display the Rogers Capital logo with reduced margin */}
-        <div className="mb-1" style={{ minHeight: '40px', width: '250px' }}>
+      <div className="text-right flex flex-col items-end">
+        {/* Display the Rogers Capital logo with minimal margins */}
+        <div className="mb-0" style={{ minHeight: '40px', width: '250px' }}>
           <img 
             ref={logoRef}
             id="company-logo"
@@ -96,10 +96,10 @@ export function QuoteDocumentHeader({
             }}
           />
         </div>
-        <h2 className="font-bold text-lg mb-0">{companyName}</h2>
-        <p className="whitespace-pre-line text-sm leading-tight">{companyAddress}</p>
-        <p className="text-sm leading-tight">Tel: {companyContact}</p>
-        <p className="text-sm leading-tight">Email: {companyEmail}</p>
+        <h2 className="font-bold text-lg mb-0 mt-0">{companyName}</h2>
+        <p className="whitespace-pre-line text-xs leading-tight mt-0 mb-0">{companyAddress}</p>
+        <p className="text-xs leading-tight mt-0 mb-0">Tel: {companyContact}</p>
+        <p className="text-xs leading-tight mt-0 mb-0">Email: {companyEmail}</p>
       </div>
     </div>
   );

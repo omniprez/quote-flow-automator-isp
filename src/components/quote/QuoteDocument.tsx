@@ -40,6 +40,7 @@ export function QuoteDocument({
   // Add a useEffect to handle logo loading and debugging
   useEffect(() => {
     console.log("QuoteDocument rendered with logo path:", companyLogo);
+    console.log("Applying compressed layout for better page fit");
     
     // Verify that the logo is loaded correctly
     if (logoRef.current) {
@@ -67,7 +68,7 @@ export function QuoteDocument({
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto bg-white">
+    <div className="p-4 max-w-4xl mx-auto bg-white">
       {/* Pass logo reference to header */}
       <QuoteDocumentHeader
         quoteData={quoteData}
@@ -80,7 +81,7 @@ export function QuoteDocument({
         logoRef={logoRef}
       />
 
-      <Separator className="my-3" style={{backgroundColor: primaryColor}} />
+      <Separator className="my-2" style={{backgroundColor: primaryColor}} />
 
       {/* Customer and Service Details */}
       <CustomerServiceDetails

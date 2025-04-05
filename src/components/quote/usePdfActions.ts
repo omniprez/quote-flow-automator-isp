@@ -11,6 +11,13 @@ export function usePdfActions() {
       setIsGeneratingPdf(true);
       console.log("Starting PDF generation for quote:", quoteNumber || quoteId);
       
+      // Apply additional compression to document for PDF generation
+      const quoteDocument = document.getElementById('quote-document');
+      if (quoteDocument) {
+        console.log("Applying document compression for PDF generation");
+        quoteDocument.classList.add('pdf-generation-mode');
+      }
+      
       // Force all images to be loaded before generating PDF
       const allImages = document.querySelectorAll('#quote-document img');
       console.log(`Found ${allImages.length} images in the document to preload`);
@@ -43,7 +50,7 @@ export function usePdfActions() {
       
       // Force a wait to ensure the logo is loaded
       console.log("Waiting for logo to fully load...");
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Final check for any images still loading
       const stillLoadingImages = Array.from(allImages).filter(img => 
@@ -53,7 +60,7 @@ export function usePdfActions() {
       if (stillLoadingImages.length > 0) {
         console.warn(`${stillLoadingImages.length} images still not loaded completely`);
         // Force one final wait
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 1000));
       } else {
         console.log("All images are loaded and ready for PDF generation");
       }
@@ -61,9 +68,20 @@ export function usePdfActions() {
       // Generate PDF with all images properly loaded
       await generatePdf("quote-document", `Quote-${quoteNumber || quoteId}`);
       toast.success("Quote PDF downloaded successfully");
+      
+      // Remove the compression class after PDF generation
+      if (quoteDocument) {
+        quoteDocument.classList.remove('pdf-generation-mode');
+      }
     } catch (error) {
       console.error("Error generating PDF:", error);
       toast.error("Failed to download PDF");
+      
+      // Make sure to remove compression class on error
+      const quoteDocument = document.getElementById('quote-document');
+      if (quoteDocument) {
+        quoteDocument.classList.remove('pdf-generation-mode');
+      }
     } finally {
       setIsGeneratingPdf(false);
     }

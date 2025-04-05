@@ -14,6 +14,8 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
   if (!element) {
     throw new Error(`Element with ID ${elementId} not found`);
   }
+  
+  console.log("PDF Generator: Starting compression for single-page fit");
 
   // Critical: Force the new logo right before generating
   const logoElement = element.querySelector('#company-logo') as HTMLImageElement;
@@ -48,17 +50,34 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
 
   // Compress the page and font size for PDF
   const originalFontSize = window.getComputedStyle(element).fontSize;
-  element.style.fontSize = '0.9em';
+  element.style.fontSize = '0.85em';
+  
+  // Store original padding
+  const originalPadding = window.getComputedStyle(element).padding;
+  element.style.padding = '10px';
+  
+  console.log("PDF Generator: Applying aggressive compression to fit on single page");
   
   // Apply minimum height to make content more compact
-  element.querySelectorAll('div, p, h2, h3').forEach(el => {
+  element.querySelectorAll('div, p, h2, h3, td, th').forEach(el => {
     if (el instanceof HTMLElement) {
       // Reduce margins and paddings
       if (window.getComputedStyle(el).marginBottom) {
-        el.style.marginBottom = '4px';
+        el.style.marginBottom = '2px';
+      }
+      if (window.getComputedStyle(el).marginTop) {
+        el.style.marginTop = '2px';
       }
       if (window.getComputedStyle(el).paddingBottom) {
-        el.style.paddingBottom = '4px';
+        el.style.paddingBottom = '2px';
+      }
+      if (window.getComputedStyle(el).paddingTop) {
+        el.style.paddingTop = '2px';
+      }
+      
+      // Reduce line heights
+      if (el.tagName === 'P' || el.tagName === 'TD') {
+        el.style.lineHeight = '1.1';
       }
     }
   });
@@ -88,20 +107,34 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
       // Compress cloned document further to fit on one page
       const docElement = clonedDoc.getElementById(elementId);
       if (docElement) {
-        docElement.style.fontSize = '0.9em';
-        docElement.querySelectorAll('div, p, h2, h3').forEach(el => {
+        docElement.style.fontSize = '0.85em';
+        docElement.style.padding = '10px';
+        
+        docElement.querySelectorAll('div, p, h2, h3, td, th').forEach(el => {
           if (el instanceof HTMLElement) {
             // Reduce margins and paddings
-            el.style.marginBottom = '4px';
-            el.style.paddingBottom = '4px';
+            el.style.marginBottom = '2px';
+            el.style.marginTop = '2px';
+            el.style.paddingBottom = '2px';
+            el.style.paddingTop = '2px';
+            
+            // Reduce line heights
+            if (el.tagName === 'P' || el.tagName === 'TD') {
+              el.style.lineHeight = '1.1';
+            }
           }
         });
+        
+        console.log("Applied maximum compression to cloned document");
       }
     }
   });
   
-  // Restore original font size after capture
+  // Restore original font size and padding after capture
   element.style.fontSize = originalFontSize;
+  element.style.padding = originalPadding;
+  
+  console.log("PDF Generator: Canvas generated, creating PDF with compressed settings");
 
   // Convert canvas to PDF
   const imgData = canvas.toDataURL("image/png");
@@ -121,6 +154,9 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
   // Compress content to try to fit on a single page
   pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
   heightLeft -= pageHeight;
+  
+  console.log("PDF Generator: Content height ratio:", imgHeight/pageHeight);
+  console.log("PDF Generator: Single page status:", heightLeft <= 0 ? "Success" : "Needs multiple pages");
 
   // Add more pages if content doesn't fit on one page
   while (heightLeft > 0) {
@@ -128,8 +164,10 @@ export async function generatePdf(elementId: string, fileName: string): Promise<
     pdf.addPage();
     pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
     heightLeft -= pageHeight;
+    console.log("PDF Generator: Added additional page");
   }
 
   // Download the PDF
   pdf.save(`${fileName}.pdf`);
+  console.log("PDF Generator: PDF saved successfully");
 }
